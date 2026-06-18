@@ -20,7 +20,7 @@ st.set_page_config(
 def load_data():
     try:
         # Mengakomodasi potensi typo nama file (Superstore vs Superstone)
-        file_name = 'SampleSuperstore.csv'
+        file_name = 'retail_profitability/SampleSuperstore.csv'
         if not os.path.exists(file_name) and os.path.exists('SampleSuperstone.csv'):
             file_name = 'SampleSuperstone.csv'
             
