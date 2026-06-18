@@ -62,7 +62,7 @@ The app expects `SampleSuperstore.csv` to be in the same folder as `app.py`.
 | File | Description |
 |---|---|
 | `app.py` | Main dashboard application |
-| `Sample_-_Superstore.csv` | Dataset — must stay in the same folder as `app.py` |
+| `SampleSuperstore.csv` | Dataset — must stay in the same folder as `app.py` |
 | `requirements.txt` | Python dependencies |
 
 ---
