@@ -45,7 +45,7 @@ PALETTE   = ["#2563EB", "#38BDF8", "#818CF8", "#C084FC", "#F472B6"]
 # ============================================================
 # GLOBAL CSS (WITH MOBILE RESPONSIVENESS)
 # ============================================================
-# PERBAIKAN: Seluruh kurung kurawal untuk CSS ditulis dengan format ganda {{ }}
+# PERBAIKAN: Menghapus 'header' dari visibility: hidden agar tombol menu (hamburger) tetap muncul di Mobile
 st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -53,8 +53,11 @@ st.markdown(f"""
     html, body, [class*="css"] {{ font-family: 'Inter', sans-serif; }}
 
     .stApp {{ background-color: {BG_MAIN}; }}
-    #MainMenu, footer, header {{visibility: hidden;}}
-    .block-container {{ padding-top: 1.2rem; padding-bottom: 3rem; max-width: 1280px; }}
+    
+    /* Hanya sembunyikan footer bawaan Streamlit, biarkan Header agar menu hamburger muncul di HP */
+    footer {{visibility: hidden;}}
+    
+    .block-container {{ padding-top: 1rem; padding-bottom: 3rem; max-width: 1280px; }}
 
     /* ===== SIDEBAR ===== */
     section[data-testid="stSidebar"] {{
@@ -165,7 +168,8 @@ st.markdown(f"""
 
     /* ===== RESPONSIVE MOBILE & TABLET MEDIA QUERIES ===== */
     @media (max-width: 768px) {{
-        .block-container {{ padding-top: 1rem; padding-bottom: 1.5rem; padding-left: 1rem; padding-right: 1rem; }}
+        /* Menambahkan ruang kosong di atas agar judul tidak tertutup header di HP */
+        .block-container {{ padding-top: 2rem; padding-bottom: 1.5rem; padding-left: 1rem; padding-right: 1rem; }}
         
         /* Adjusting KPI cards for smaller screens */
         .kpi-card {{ padding: 14px 16px; }}
@@ -175,7 +179,7 @@ st.markdown(f"""
         .kpi-sub {{ font-size: 11px; }}
         
         /* Typography downscaling */
-        h1 {{ font-size: 1.6rem !important; }}
+        h1 {{ font-size: 1.6rem !important; margin-top: 10px !important; }}
         .sec-title {{ font-size: 16px; }}
         .sec-desc {{ font-size: 12px; margin-bottom: 12px; }}
         .chart-card-title {{ font-size: 13.5px; }}
@@ -249,14 +253,12 @@ def delta_badge(value, suffix="%", invert=False):
     return f'<span class="kpi-delta {cls}">{arrow} {abs(value):.1f}{suffix}</span>'
 
 def chart_layout(fig, height=380, show_legend=True):
-    # PERBAIKAN RESPONSIVITAS: 
-    # Legend diletakkan rata kiri (x=0) agar ketika layar sempit, teks legend memanjang ke kanan dan tidak keluar layar
     fig.update_layout(
         height=height,
-        margin=dict(t=40, b=20, l=10, r=10), # Menambah margin atas (t=40) untuk memberi ruang legend
+        margin=dict(t=40, b=20, l=10, r=10),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter", color=TEXT_MUTED, size=11), # Ukuran font chart dikurangi sedikit
+        font=dict(family="Inter", color=TEXT_MUTED, size=11), 
         hoverlabel=dict(bgcolor="white", font_size=12, font_family="Inter"),
         showlegend=show_legend,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, font=dict(size=10)) if show_legend else None,
@@ -930,3 +932,4 @@ st.markdown(f"""
     Retail Profitability Analyzer · Dataset: Sample Superstore (Kaggle) · Built with Streamlit, Pandas & Plotly
 </div>
 """, unsafe_allow_html=True)
+""" ] saya mau menambahkan fitur yaitu saya ingin upload file dataset saya supaya mempermudahkan saya, dan di sesuaikan dengan tema light nya dan fitur fitur yang saya berikan sebelumnya disesuaikan dengan file yang diupload. dataset yang saya berikan tidak di drop ya, jadi kalau dataset nya sama maka bisa kebaca.
