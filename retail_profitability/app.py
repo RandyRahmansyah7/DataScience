@@ -1,6 +1,6 @@
 """
 Retail Profitability Analyzer — Enhanced Executive Dashboard
-Light Mode Premium Design + Decision-Support Features + File Uploader
+Adaptive Light/Dark Mode Premium Design + Decision-Support Features
 
 Run with: streamlit run app.py
 """
@@ -24,146 +24,127 @@ st.set_page_config(
 )
 
 # ============================================================
-# DESIGN TOKENS — LIGHT MODE, PREMIUM
+# DESIGN TOKENS
 # ============================================================
-BG_MAIN      = "#F5F7FA"
-CARD_BG      = "#FFFFFF"
-CARD_BORDER  = "#E6E9EF"
-SIDEBAR_BG   = "#FFFFFF"
-TEXT_MAIN    = "#0F172A"
-TEXT_MUTED   = "#64748B"
-TEXT_DIM     = "#94A3B8"
-
-PRIMARY   = "#2563EB"   # Blue — revenue
-SUCCESS   = "#10B981"   # Emerald — profit / good
-WARNING   = "#F59E0B"   # Amber — caution
-DANGER    = "#EF4444"   # Red — loss / risk
-PURPLE    = "#8B5CF6"   # Purple — discount
-NEUTRAL   = "#94A3B8"   # Slate — neutral
+PRIMARY   = "#2563EB"   # Blue
+SUCCESS   = "#10B981"   # Emerald
+WARNING   = "#F59E0B"   # Amber
+DANGER    = "#EF4444"   # Red
+PURPLE    = "#8B5CF6"   # Purple
+NEUTRAL   = "#94A3B8"   # Slate
 PALETTE   = ["#2563EB", "#38BDF8", "#818CF8", "#C084FC", "#F472B6"]
 
 # ============================================================
-# GLOBAL CSS (WITH MOBILE RESPONSIVENESS & BUG FIX)
+# GLOBAL CSS (ADAPTIVE LIGHT/DARK MODE & MOBILE RESPONSIVE)
 # ============================================================
-st.markdown(f"""
+st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    html, body, [class*="css"] {{ font-family: 'Inter', sans-serif; }}
-
-    .stApp {{ background-color: {BG_MAIN}; }}
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     
-    /* Sembunyikan footer bawaan Streamlit, biarkan Header agar menu hamburger muncul di HP */
-    footer {{visibility: hidden;}}
+    /* Sembunyikan footer bawaan Streamlit */
+    footer {visibility: hidden;}
     
-    .block-container {{ padding-top: 1rem; padding-bottom: 3rem; max-width: 1280px; }}
+    .block-container { padding-top: 1rem; padding-bottom: 3rem; max-width: 1280px; }
 
     /* ===== SIDEBAR ===== */
-    section[data-testid="stSidebar"] {{
-        background-color: {SIDEBAR_BG};
-        border-right: 1px solid {CARD_BORDER};
-    }}
-    .sidebar-logo {{
-        display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
-    }}
-    .sidebar-logo-mark {{
+    .sidebar-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .sidebar-logo-mark {
         width: 36px; height: 36px; border-radius: 9px;
-        background: linear-gradient(135deg, {PRIMARY}, {PURPLE});
+        background: linear-gradient(135deg, #2563EB, #8B5CF6);
         display: flex; align-items: center; justify-content: center;
         font-weight: 800; font-size: 17px; color: white;
-    }}
-    .sidebar-logo-text {{ font-size: 15px; font-weight: 800; color: {TEXT_MAIN}; line-height: 1.2; }}
-    .sidebar-logo-sub  {{ font-size: 10.5px; color: {TEXT_DIM}; letter-spacing: 0.5px; font-weight: 600; }}
+    }
+    .sidebar-logo-text { font-size: 15px; font-weight: 800; color: var(--text-color); line-height: 1.2; }
+    .sidebar-logo-sub  { font-size: 10.5px; color: gray; letter-spacing: 0.5px; font-weight: 600; }
 
     /* ===== ALERT BANNER ===== */
-    .alert-banner {{
+    .alert-banner {
         border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
-        display: flex; align-items: flex-start; gap: 12px; border: 1px solid;
-    }}
-    .alert-critical {{ background: #FEF2F2; border-color: #FECACA; }}
-    .alert-warning  {{ background: #FFFBEB; border-color: #FDE68A; }}
-    .alert-success  {{ background: #F0FDF4; border-color: #BBF7D0; }}
-    .alert-icon {{ font-size: 18px; line-height: 1.4; }}
-    .alert-text {{ font-size: 13.5px; color: {TEXT_MAIN}; line-height: 1.5; flex: 1; }}
-    .alert-text b {{ font-weight: 700; }}
-    .alert-critical .alert-text b {{ color: {DANGER}; }}
-    .alert-warning  .alert-text b {{ color: #B45309; }}
-    .alert-success  .alert-text b {{ color: {SUCCESS}; }}
+        display: flex; align-items: flex-start; gap: 12px; 
+        border: 1px solid rgba(128, 128, 128, 0.2);
+    }
+    .alert-critical { background-color: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
+    .alert-warning  { background-color: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
+    .alert-success  { background-color: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+    .alert-icon { font-size: 18px; line-height: 1.4; }
+    .alert-text { font-size: 13.5px; color: var(--text-color); line-height: 1.5; flex: 1; }
+    .alert-text b { font-weight: 700; }
+    .alert-critical .alert-text b { color: #EF4444; }
+    .alert-warning  .alert-text b { color: #F59E0B; }
+    .alert-success  .alert-text b { color: #10B981; }
 
-    /* ===== KPI CARD ===== */
-    .kpi-card {{
-        background: {CARD_BG}; border: 1px solid {CARD_BORDER}; border-radius: 14px;
-        padding: 20px 22px; height: 100%; box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+    /* ===== KPI CARD (Adaptive) ===== */
+    .kpi-card {
+        background-color: var(--secondary-background-color); 
+        border: 1px solid rgba(128, 128, 128, 0.2); 
+        border-radius: 14px; padding: 20px 22px; height: 100%; 
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         transition: box-shadow 0.2s ease, transform 0.2s ease;
-    }}
-    .kpi-card:hover {{ box-shadow: 0 8px 20px rgba(15,23,42,0.08); transform: translateY(-2px); }}
-    .kpi-top {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }}
-    .kpi-label {{ font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: {TEXT_MUTED}; }}
-    .kpi-icon {{ width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }}
-    .kpi-value {{ font-size: 28px; font-weight: 800; color: {TEXT_MAIN}; line-height: 1.1; margin-bottom: 8px; }}
-    .delta-up   {{ background: #F0FDF4; color: {SUCCESS}; }}
-    .delta-down {{ background: #FEF2F2; color: {DANGER}; }}
-    .kpi-delta {{ font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; }}
-    .kpi-sub {{ font-size: 12px; color: {TEXT_DIM}; margin-top: 6px; }}
+    }
+    .kpi-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.15); transform: translateY(-2px); }
+    .kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .kpi-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: gray; }
+    .kpi-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    .kpi-value { font-size: 28px; font-weight: 800; color: var(--text-color); line-height: 1.1; margin-bottom: 8px; }
+    .delta-up   { background-color: rgba(16, 185, 129, 0.1); color: #10B981; }
+    .delta-down { background-color: rgba(239, 68, 68, 0.1); color: #EF4444; }
+    .kpi-delta { font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; }
+    .kpi-sub { font-size: 12px; color: gray; margin-top: 6px; }
 
     /* ===== SECTION HEADER ===== */
-    .sec-header {{ display: flex; align-items: center; gap: 10px; margin: 8px 0 2px 0; }}
-    .sec-title {{ font-size: 19px; font-weight: 800; color: {TEXT_MAIN}; }}
-    .sec-desc  {{ font-size: 13px; color: {TEXT_MUTED}; margin: 4px 0 16px 0; max-width: 760px; line-height: 1.6; }}
+    .sec-header { display: flex; align-items: center; gap: 10px; margin: 8px 0 2px 0; }
+    .sec-title { font-size: 19px; font-weight: 800; color: var(--text-color); }
+    .sec-desc  { font-size: 13px; color: gray; margin: 4px 0 16px 0; max-width: 760px; line-height: 1.6; }
 
-    /* ===== PERBAIKAN BUG HP: ST.CONTAINER STYLING (SAFE) ===== */
-    [data-testid="stVerticalBlockBorderWrapper"] {{
-        background-color: {CARD_BG};
+    /* ===== CONTAINER STYLING (SAFE) ===== */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: var(--secondary-background-color);
         border-radius: 14px;
-        box-shadow: 0 1px 3px rgba(15,23,42,0.04);
-        border: 1px solid {CARD_BORDER};
-    }}
-    .chart-card-title {{ font-size: 14.5px; font-weight: 700; color: {TEXT_MAIN}; margin-bottom: 2px; padding: 0 5px; }}
-    .chart-card-sub   {{ font-size: 12px; color: {TEXT_DIM}; margin-bottom: 10px; padding: 0 5px; }}
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid rgba(128, 128, 128, 0.2);
+    }
+    .chart-card-title { font-size: 14.5px; font-weight: 700; color: var(--text-color); margin-bottom: 2px; padding: 0 5px; }
+    .chart-card-sub   { font-size: 12px; color: gray; margin-bottom: 10px; padding: 0 5px; }
 
     /* ===== ACTION CARD ===== */
-    .action-card {{ background: {CARD_BG}; border: 1px solid {CARD_BORDER}; border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; }}
-    .action-badge {{ font-size: 10.5px; font-weight: 700; padding: 3px 10px; border-radius: 5px; display: inline-block; margin-bottom: 10px; }}
-    .action-badge.p1 {{ background: #FEF2F2; color: {DANGER}; }}
-    .action-badge.p2 {{ background: #FFFBEB; color: #B45309; }}
-    .action-title {{ font-size: 15px; font-weight: 700; color: {TEXT_MAIN}; margin-bottom: 6px; }}
-    .action-body  {{ font-size: 13px; color: {TEXT_MUTED}; line-height: 1.6; margin-bottom: 12px; }}
-    .action-stats {{ display: flex; flex-wrap: wrap; gap: 24px; padding-top: 10px; border-top: 1px solid {CARD_BORDER}; }}
-    .action-stat-label {{ font-size: 10.5px; color: {TEXT_DIM}; text-transform: uppercase; margin-bottom: 2px; }}
-    .action-stat-value {{ font-size: 14.5px; font-weight: 700; color: {TEXT_MAIN}; }}
+    .action-card { background-color: var(--secondary-background-color); border: 1px solid rgba(128, 128, 128, 0.2); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; }
+    .action-badge { font-size: 10.5px; font-weight: 700; padding: 3px 10px; border-radius: 5px; display: inline-block; margin-bottom: 10px; }
+    .action-badge.p1 { background-color: rgba(239, 68, 68, 0.1); color: #EF4444; }
+    .action-badge.p2 { background-color: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+    .action-title { font-size: 15px; font-weight: 700; color: var(--text-color); margin-bottom: 6px; }
+    .action-body  { font-size: 13px; color: gray; line-height: 1.6; margin-bottom: 12px; }
+    .action-stats { display: flex; flex-wrap: wrap; gap: 24px; padding-top: 10px; border-top: 1px solid rgba(128, 128, 128, 0.2); }
+    .action-stat-label { font-size: 10.5px; color: gray; text-transform: uppercase; margin-bottom: 2px; }
+    .action-stat-value { font-size: 14.5px; font-weight: 700; color: var(--text-color); }
 
-    h1 {{ font-weight: 800 !important; color: {TEXT_MAIN}; margin-bottom: 0.1rem !important; }}
-    h2, h3 {{ font-weight: 700 !important; color: {TEXT_MAIN}; }}
-    hr {{ margin: 1.8rem 0 !important; border-color: {CARD_BORDER}; opacity: 0.8; }}
-    .footer {{ text-align:center; padding: 24px 0 4px 0; color: {TEXT_DIM}; font-size: 12px; }}
-
-    /* ===== DARK MODE ===== */
-    @media (prefers-color-scheme: dark) {{
-        [data-testid="stVerticalBlockBorderWrapper"] {{ background-color: #1e293b; border-color: #334155; }}
-    }}
+    h1, h2, h3 { color: var(--text-color) !important; margin-bottom: 0.1rem !important; }
+    hr { margin: 1.8rem 0 !important; border-color: rgba(128, 128, 128, 0.2); opacity: 0.8; }
+    .footer { text-align:center; padding: 24px 0 4px 0; color: gray; font-size: 12px; }
 
     /* ===== MOBILE RESPONSIVE ===== */
-    @media (max-width: 768px) {{
-        .block-container {{ padding-top: 2rem; padding-bottom: 1.5rem; padding-left: 0.8rem; padding-right: 0.8rem; }}
-        .kpi-card {{ padding: 14px 16px; }}
-        .kpi-value {{ font-size: 22px; margin-bottom: 5px; }}
-        .kpi-icon {{ width: 26px; height: 26px; font-size: 12px; }}
-        .kpi-label {{ font-size: 10px; }}
-        .kpi-sub {{ font-size: 11px; }}
-        h1 {{ font-size: 1.6rem !important; margin-top: 10px !important; }}
-        .sec-title {{ font-size: 16px; }}
-        .sec-desc {{ font-size: 12px; margin-bottom: 12px; }}
-        .chart-card-title {{ font-size: 13.5px; }}
-        .action-stats {{ gap: 14px; flex-direction: row; }}
-        .alert-banner {{ padding: 12px 14px; align-items: center; }}
-        .alert-icon {{ font-size: 16px; }}
-        .alert-text {{ font-size: 12.5px; }}
-    }}
+    @media (max-width: 768px) {
+        .block-container { padding-top: 2rem; padding-bottom: 1.5rem; padding-left: 0.8rem; padding-right: 0.8rem; }
+        .kpi-card { padding: 14px 16px; }
+        .kpi-value { font-size: 22px; margin-bottom: 5px; }
+        .kpi-icon { width: 26px; height: 26px; font-size: 12px; }
+        .kpi-label { font-size: 10px; }
+        .kpi-sub { font-size: 11px; }
+        h1 { font-size: 1.6rem !important; margin-top: 10px !important; }
+        .sec-title { font-size: 16px; }
+        .sec-desc { font-size: 12px; margin-bottom: 12px; }
+        .chart-card-title { font-size: 13.5px; }
+        .action-stats { gap: 14px; flex-direction: row; }
+        .alert-banner { padding: 12px 14px; align-items: center; }
+        .alert-icon { font-size: 16px; }
+        .alert-text { font-size: 12.5px; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# SIDEBAR — UPLOAD & NAVIGATION
+# SIDEBAR & NAVIGATION
 # ============================================================
 with st.sidebar:
     st.markdown("""
@@ -177,11 +158,6 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     st.markdown("---")
 
-    # FITUR BARU: UPLOAD FILE
-    st.markdown("**📂 Upload Dataset**")
-    uploaded_file = st.file_uploader("Upload CSV file (Optional)", type=["csv"], help="Upload dataset Anda sendiri. Jika kosong, sistem menggunakan data default.")
-    st.markdown("---")
-
     menu = st.radio(
         "Navigation",
         ["🏠 Executive Summary", "📈 Trend & Seasonality", "🌎 Geo-Performance",
@@ -193,30 +169,37 @@ with st.sidebar:
 # DATA LOADING
 # ============================================================
 @st.cache_data(show_spinner=False)
-def load_data(file_obj):
+def load_data():
+    candidates = ["SampleSuperstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
     df = None
-    if file_obj is not None:
-        # Baca dari file yang diupload user
-        try:
-            df = pd.read_csv(file_obj, encoding="latin-1")
-        except Exception as e:
-            st.error(f"Error reading uploaded file: {e}")
-            return None
-    else:
-        # Fallback ke dataset lokal
-        candidates = ["SampleSuperstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
-        for path in candidates:
-            if os.path.exists(path):
-                df = pd.read_csv(path, encoding="latin-1")
-                break
+    for path in candidates:
+        if os.path.exists(path):
+            df = pd.read_csv(path, encoding="latin-1")
+            break
 
     if df is None:
-        return None
+        # Dummy fallback
+        st.warning("⚠️ File CSV tidak ditemukan. Menggunakan data simulasi untuk demonstrasi.")
+        np.random.seed(42)
+        dates = pd.date_range(start='2020-01-01', end='2023-12-31', freq='D')
+        n = len(dates)
+        df = pd.DataFrame({
+            'Order Date': dates,
+            'Sales': np.random.uniform(10, 2000, n),
+            'Discount': np.random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7], n, p=[0.4, 0.2, 0.15, 0.1, 0.05, 0.05, 0.05]),
+            'Category': np.random.choice(['Technology', 'Furniture', 'Office Supplies'], n),
+            'Sub-Category': np.random.choice([f'Sub-{i}' for i in range(1, 10)], n),
+            'Region': np.random.choice(['East', 'West', 'Central', 'South'], n),
+            'Segment': np.random.choice(['Consumer', 'Corporate', 'Home Office'], n),
+            'Customer Name': np.random.choice([f'Customer-{i}' for i in range(1, 100)], n),
+            'Product Name': np.random.choice([f'Product-{i}' for i in range(1, 200)], n)
+        })
+        base_m = {'Technology': 0.3, 'Office Supplies': 0.4, 'Furniture': 0.15}
+        df['Profit'] = df.apply(lambda row: row['Sales'] * (base_m[row['Category']] - row['Discount'] * 1.2), axis=1)
 
-    # Membersihkan nama kolom
+    # Clean Columns
     df.columns = [c.strip() for c in df.columns]
     
-    # Standarisasi Tanggal & Kolom
     if "Order Date" in df.columns:
         df["Order Date"] = pd.to_datetime(df["Order Date"], errors="coerce")
         df = df.dropna(subset=["Order Date"]).copy()
@@ -224,15 +207,12 @@ def load_data(file_obj):
         df["Month"]      = df["Order Date"].dt.month
         df["Month Name"] = df["Order Date"].dt.strftime("%b")
     else:
-        # Fallback jika kolom tanggal tidak ada
         df["Year"] = "All"
         df["Month Name"] = "All"
         df["Order Date"] = pd.Timestamp.today()
     
-    # Pastikan metrik utama tersedia, jika tidak buat nilai 0
     for col in ["Sales", "Profit", "Discount"]:
-        if col not in df.columns:
-            df[col] = 0
+        if col not in df.columns: df[col] = 0
 
     df["Profit Margin"] = np.where(df["Sales"] > 0, df["Profit"] / df["Sales"], 0)
     df["Is Loss"]    = df["Profit"] < 0
@@ -242,10 +222,10 @@ def load_data(file_obj):
     df["Discount Bucket"] = pd.cut(df["Discount"], bins=bins, labels=labels)
     return df
 
-df_raw = load_data(uploaded_file)
+df_raw = load_data()
 
 if df_raw is None or df_raw.empty:
-    st.error("⚠️ Dataset tidak ditemukan atau kosong. Silakan upload file CSV yang valid.")
+    st.error("⚠️ Dataset tidak ditemukan atau kosong. Silakan pastikan file CSV tersedia.")
     st.stop()
 
 # ============================================================
@@ -274,13 +254,14 @@ def chart_layout(fig, height=380, show_legend=True):
         margin=dict(t=40, b=20, l=10, r=10),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter", color=TEXT_MUTED, size=11), 
-        hoverlabel=dict(bgcolor="white", font_size=12, font_family="Inter"),
+        font=dict(family="Inter", size=11), # Menghapus default color agar streamit adaptasi otomatis
+        hoverlabel=dict(font_size=12, font_family="Inter"),
         showlegend=show_legend,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, font=dict(size=10)) if show_legend else None,
     )
-    fig.update_xaxes(showgrid=False, zeroline=False, tickfont=dict(color=TEXT_MUTED))
-    fig.update_yaxes(showgrid=True, gridcolor="rgba(226,232,240,0.7)", zeroline=False, tickfont=dict(color=TEXT_MUTED))
+    fig.update_xaxes(showgrid=False, zeroline=False)
+    # Menggunakan warna grid yang aman di dark/light mode
+    fig.update_yaxes(showgrid=True, gridcolor="rgba(128,128,128,0.2)", zeroline=False)
     return fig
 
 def render_kpi_card(label, value, icon, icon_bg, icon_color, delta_val=None, delta_suffix="%", invert_delta=False, sub_text=None, value_color=None):
@@ -310,14 +291,12 @@ with st.sidebar:
     available_years = sorted(df_raw["Year"].unique().tolist(), reverse=True)
     sel_year = st.selectbox("Year", ["All Years"] + available_years)
 
-    # Pastikan Region ada di dataset
     if "Region" in df_raw.columns:
         available_regions = sorted(df_raw["Region"].dropna().unique().tolist())
         sel_region = st.selectbox("Region", ["All Regions"] + available_regions)
     else:
         sel_region = "All Regions"
 
-    # Pastikan Segment ada di dataset
     if "Segment" in df_raw.columns:
         available_segments = sorted(df_raw["Segment"].dropna().unique().tolist())
         sel_segment = st.selectbox("Segment", ["All Segments"] + available_segments)
@@ -435,17 +414,17 @@ if menu == "🏠 Executive Summary":
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_kpi_card("Total Revenue", fmt_currency(total_rev), "$", "#EFF6FF", PRIMARY,
+        render_kpi_card("Total Revenue", fmt_currency(total_rev), "$", "rgba(37, 99, 235, 0.1)", PRIMARY,
                         delta_val=rev_yoy, sub_text=comparison_label if rev_yoy is not None else f"{total_orders:,} orders")
     with c2:
-        render_kpi_card("Total Profit", fmt_currency(total_profit), "▲", "#F0FDF4", SUCCESS,
+        render_kpi_card("Total Profit", fmt_currency(total_profit), "▲", "rgba(16, 185, 129, 0.1)", SUCCESS,
                         delta_val=prof_yoy, sub_text=comparison_label if prof_yoy is not None else f"{avg_margin:.1f}% margin")
     with c3:
-        render_kpi_card("Avg Profit Margin", fmt_pct(avg_margin), "%", "#FFFBEB", WARNING,
+        render_kpi_card("Avg Profit Margin", fmt_pct(avg_margin), "%", "rgba(245, 158, 11, 0.1)", WARNING,
                         delta_val=margin_yoy, delta_suffix=" pts", sub_text=comparison_label if margin_yoy is not None else "Target: ≥12%",
                         value_color=DANGER if avg_margin < 8 else None)
     with c4:
-        render_kpi_card("Loss Transaction Rate", fmt_pct(loss_rate), "!", "#FEF2F2", DANGER,
+        render_kpi_card("Loss Transaction Rate", fmt_pct(loss_rate), "!", "rgba(239, 68, 68, 0.1)", DANGER,
                         delta_val=loss_rate_yoy, delta_suffix=" pts", invert_delta=True,
                         sub_text=comparison_label if loss_rate_yoy is not None else "Threshold: <15%",
                         value_color=DANGER if loss_rate > 15 else None)
@@ -524,7 +503,7 @@ if menu == "🏠 Executive Summary":
                     marker_color=[DANGER if p < 0 else SUCCESS for p in sub_drill["Profit"]],
                     text=sub_drill["Profit"].apply(fmt_currency), textposition="outside"
                 ))
-                fig_drill.add_vline(x=0, line_color=TEXT_MUTED, line_width=1.5)
+                fig_drill.add_vline(x=0, line_color="gray", line_width=1.5)
                 fig_drill = chart_layout(fig_drill, height=300, show_legend=False)
                 fig_drill.update_xaxes(title="Total Profit ($)")
                 st.plotly_chart(fig_drill, use_container_width=True)
@@ -810,13 +789,13 @@ elif menu == "🚨 Profitability Risks":
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        render_kpi_card("Orders >20% Discount", f"{len(high_df):,}", "!", "#FEF2F2", DANGER,
+        render_kpi_card("Orders >20% Discount", f"{len(high_df):,}", "!", "rgba(239, 68, 68, 0.1)", DANGER,
                         sub_text=f"{vol_pct_high:.1f}% of total volume")
     with c2:
-        render_kpi_card("Revenue on High Discount", fmt_currency(sales_high), "%", "#F5F3FF", PURPLE,
+        render_kpi_card("Revenue on High Discount", fmt_currency(sales_high), "%", "rgba(139, 92, 246, 0.1)", PURPLE,
                         sub_text=f"{pct_sales_high:.1f}% of total revenue")
     with c3:
-        render_kpi_card("Profit Eroded", fmt_currency(abs(loss_from_disc)), "↓", "#FEF2F2", DANGER,
+        render_kpi_card("Profit Eroded", fmt_currency(abs(loss_from_disc)), "↓", "rgba(239, 68, 68, 0.1)", DANGER,
                         sub_text="Direct cost of over-discounting", value_color=DANGER)
 
     st.markdown("<br>", unsafe_allow_html=True)
