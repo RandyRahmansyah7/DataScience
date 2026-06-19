@@ -45,6 +45,7 @@ PALETTE   = ["#2563EB", "#38BDF8", "#818CF8", "#C084FC", "#F472B6"]
 # ============================================================
 # GLOBAL CSS (WITH MOBILE RESPONSIVENESS)
 # ============================================================
+# PERBAIKAN: Seluruh kurung kurawal untuk CSS ditulis dengan format ganda {{ }}
 st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -163,28 +164,28 @@ st.markdown(f"""
     .footer {{ text-align:center; padding: 24px 0 4px 0; color: {TEXT_DIM}; font-size: 12px; }}
 
     /* ===== RESPONSIVE MOBILE & TABLET MEDIA QUERIES ===== */
-    @media (max-width: 768px) {
-        .block-container { padding-top: 1rem; padding-bottom: 1.5rem; padding-left: 1rem; padding-right: 1rem; }
+    @media (max-width: 768px) {{
+        .block-container {{ padding-top: 1rem; padding-bottom: 1.5rem; padding-left: 1rem; padding-right: 1rem; }}
         
         /* Adjusting KPI cards for smaller screens */
-        .kpi-card { padding: 14px 16px; }
-        .kpi-value { font-size: 22px; margin-bottom: 5px; }
-        .kpi-icon { width: 26px; height: 26px; font-size: 12px; }
-        .kpi-label { font-size: 10px; }
-        .kpi-sub { font-size: 11px; }
+        .kpi-card {{ padding: 14px 16px; }}
+        .kpi-value {{ font-size: 22px; margin-bottom: 5px; }}
+        .kpi-icon {{ width: 26px; height: 26px; font-size: 12px; }}
+        .kpi-label {{ font-size: 10px; }}
+        .kpi-sub {{ font-size: 11px; }}
         
         /* Typography downscaling */
-        h1 { font-size: 1.6rem !important; }
-        .sec-title { font-size: 16px; }
-        .sec-desc { font-size: 12px; margin-bottom: 12px; }
-        .chart-card-title { font-size: 13.5px; }
+        h1 {{ font-size: 1.6rem !important; }}
+        .sec-title {{ font-size: 16px; }}
+        .sec-desc {{ font-size: 12px; margin-bottom: 12px; }}
+        .chart-card-title {{ font-size: 13.5px; }}
         
         /* Flex adjustments to prevent horizontal overflow */
-        .action-stats { gap: 14px; flex-direction: row; }
-        .alert-banner { padding: 12px 14px; align-items: center; }
-        .alert-icon { font-size: 16px; }
-        .alert-text { font-size: 12.5px; }
-    }
+        .action-stats {{ gap: 14px; flex-direction: row; }}
+        .alert-banner {{ padding: 12px 14px; align-items: center; }}
+        .alert-icon {{ font-size: 16px; }}
+        .alert-text {{ font-size: 12.5px; }}
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -193,7 +194,7 @@ st.markdown(f"""
 # ============================================================
 @st.cache_data
 def load_data():
-    candidates = ["retail_profitability/data/SampleSuperstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
+    candidates = ["SampleSuperstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
     df = None
     for path in candidates:
         if os.path.exists(path):
@@ -929,3 +930,4 @@ st.markdown(f"""
     Retail Profitability Analyzer · Dataset: Sample Superstore (Kaggle) · Built with Streamlit, Pandas & Plotly
 </div>
 """, unsafe_allow_html=True)
+""" ]
