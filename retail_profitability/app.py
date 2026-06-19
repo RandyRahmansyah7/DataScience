@@ -1,3 +1,10 @@
+"""
+Retail Profitability Analyzer — Enhanced Executive Dashboard
+Light Mode Premium Design + Decision-Support Features
+
+Run with: streamlit run app.py
+"""
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -36,7 +43,7 @@ NEUTRAL   = "#94A3B8"   # Slate — neutral
 PALETTE   = ["#2563EB", "#38BDF8", "#818CF8", "#C084FC", "#F472B6"]
 
 # ============================================================
-# GLOBAL CSS
+# GLOBAL CSS (WITH MOBILE RESPONSIVENESS)
 # ============================================================
 st.markdown(f"""
 <style>
@@ -141,25 +148,52 @@ st.markdown(f"""
     }}
     .action-badge.p1 {{ background: #FEF2F2; color: {DANGER}; }}
     .action-badge.p2 {{ background: #FFFBEB; color: #B45309; }}
+    .action-badge.p3 {{ background: #EFF6FF; color: {PRIMARY}; }}
     .action-title {{ font-size: 15px; font-weight: 700; color: {TEXT_MAIN}; margin-bottom: 6px; }}
     .action-body  {{ font-size: 13px; color: {TEXT_MUTED}; line-height: 1.6; margin-bottom: 12px; }}
-    .action-stats {{ display: flex; gap: 24px; padding-top: 10px; border-top: 1px solid {CARD_BORDER}; }}
+    .action-stats {{ display: flex; flex-wrap: wrap; gap: 24px; padding-top: 10px; border-top: 1px solid {CARD_BORDER}; }}
     .action-stat-label {{ font-size: 10.5px; color: {TEXT_DIM}; text-transform: uppercase; margin-bottom: 2px; }}
     .action-stat-value {{ font-size: 14.5px; font-weight: 700; color: {TEXT_MAIN}; }}
 
     h1 {{ font-weight: 800 !important; color: {TEXT_MAIN}; margin-bottom: 0.1rem !important; }}
     h2, h3 {{ font-weight: 700 !important; color: {TEXT_MAIN}; }}
+
     hr {{ margin: 1.8rem 0 !important; border-color: {CARD_BORDER}; opacity: 0.8; }}
+
     .footer {{ text-align:center; padding: 24px 0 4px 0; color: {TEXT_DIM}; font-size: 12px; }}
+
+    /* ===== RESPONSIVE MOBILE & TABLET MEDIA QUERIES ===== */
+    @media (max-width: 768px) {
+        .block-container { padding-top: 1rem; padding-bottom: 1.5rem; padding-left: 1rem; padding-right: 1rem; }
+        
+        /* Adjusting KPI cards for smaller screens */
+        .kpi-card { padding: 14px 16px; }
+        .kpi-value { font-size: 22px; margin-bottom: 5px; }
+        .kpi-icon { width: 26px; height: 26px; font-size: 12px; }
+        .kpi-label { font-size: 10px; }
+        .kpi-sub { font-size: 11px; }
+        
+        /* Typography downscaling */
+        h1 { font-size: 1.6rem !important; }
+        .sec-title { font-size: 16px; }
+        .sec-desc { font-size: 12px; margin-bottom: 12px; }
+        .chart-card-title { font-size: 13.5px; }
+        
+        /* Flex adjustments to prevent horizontal overflow */
+        .action-stats { gap: 14px; flex-direction: row; }
+        .alert-banner { padding: 12px 14px; align-items: center; }
+        .alert-icon { font-size: 16px; }
+        .alert-text { font-size: 12.5px; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# DATA LOADING & CLEANING
+# DATA LOADING
 # ============================================================
 @st.cache_data
 def load_data():
-    candidates = ["retail_profitability/data/SampleSuperstore.csv", "SampleSuperstore.csv", "Superstore.csv"]
+    candidates = ["retail_profitability/data/SampleSuperstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
     df = None
     for path in candidates:
         if os.path.exists(path):
@@ -171,16 +205,14 @@ def load_data():
 
     df.columns = [c.strip() for c in df.columns]
     df["Order Date"] = pd.to_datetime(df["Order Date"], errors="coerce")
-    df = df.dropna(subset=["Order Date"]).copy() # Hindari error parsing tanggal
+    df = df.dropna(subset=["Order Date"]).copy()
     
     df["Ship Date"]  = pd.to_datetime(df["Ship Date"], errors="coerce")
-    # PERBAIKAN: Format 'Year' ke String murni untuk menghindari bentrok tipe saat Filter
     df["Year"]       = df["Order Date"].dt.year.astype(int).astype(str)
     df["Month"]      = df["Order Date"].dt.month
     df["Month Name"] = df["Order Date"].dt.strftime("%b")
     df["Quarter"]    = df["Order Date"].dt.quarter
     
-    # Amankan pembagian margin
     df["Profit Margin"] = np.where(df["Sales"] > 0, df["Profit"] / df["Sales"], 0)
     df["Is Loss"]    = df["Profit"] < 0
 
@@ -209,7 +241,6 @@ def fmt_pct(num):
     return f"{num:.1f}%"
 
 def delta_badge(value, suffix="%", invert=False):
-    """Returns HTML for a delta badge. invert=True means negative is good (e.g. loss rate)."""
     is_up = value >= 0
     good = is_up if not invert else not is_up
     cls = "delta-up" if good else "delta-down"
@@ -217,21 +248,22 @@ def delta_badge(value, suffix="%", invert=False):
     return f'<span class="kpi-delta {cls}">{arrow} {abs(value):.1f}{suffix}</span>'
 
 def chart_layout(fig, height=380, show_legend=True):
+    # PERBAIKAN RESPONSIVITAS: 
+    # Legend diletakkan rata kiri (x=0) agar ketika layar sempit, teks legend memanjang ke kanan dan tidak keluar layar
     fig.update_layout(
         height=height,
-        margin=dict(t=30, b=20, l=10, r=10),
+        margin=dict(t=40, b=20, l=10, r=10), # Menambah margin atas (t=40) untuk memberi ruang legend
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter", color=TEXT_MUTED, size=12),
+        font=dict(family="Inter", color=TEXT_MUTED, size=11), # Ukuran font chart dikurangi sedikit
         hoverlabel=dict(bgcolor="white", font_size=12, font_family="Inter"),
         showlegend=show_legend,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)) if show_legend else None,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, font=dict(size=10)) if show_legend else None,
     )
     fig.update_xaxes(showgrid=False, zeroline=False, tickfont=dict(color=TEXT_MUTED))
     fig.update_yaxes(showgrid=True, gridcolor="rgba(226,232,240,0.7)", zeroline=False, tickfont=dict(color=TEXT_MUTED))
     return fig
 
-# PERBAIKAN: Engine HTML dirapatkan tanpa newline (\n) agar Markdown Streamlit tidak memecah styling CSS
 def render_kpi_card(label, value, icon, icon_bg, icon_color, delta_val=None, delta_suffix="%", invert_delta=False, sub_text=None, value_color=None):
     value_cls = f' style="color:{value_color};"' if value_color else ""
     delta_html = delta_badge(delta_val, delta_suffix, invert_delta) if delta_val is not None else ""
@@ -274,7 +306,6 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("**🎛️ Global Filters**")
 
-    # Ambil dropdown list dengan aman (semua string)
     available_years = sorted(df_raw["Year"].unique().tolist(), reverse=True)
     sel_year = st.selectbox("Year", ["All Years"] + available_years)
 
@@ -311,7 +342,6 @@ total_rev    = df["Sales"].sum()
 total_profit = df["Profit"].sum()
 avg_margin   = (total_profit / total_rev * 100) if total_rev > 0 else 0
 
-# Safe orders detection
 order_col = "Order ID" if "Order ID" in df.columns else "Sales"
 total_orders = df[order_col].nunique() if "Order ID" in df.columns else len(df)
 
@@ -367,11 +397,9 @@ if menu == "🏠 Executive Summary":
     if active_filters:
         st.info(f"🔍 **Active Filters:** {' | '.join(active_filters)}")
 
-    # YoY Calc
     rev_yoy = prof_yoy = margin_yoy = loss_rate_yoy = None
     comparison_label = "vs prior period"
 
-    # PERBAIKAN: YoY hanya dihitung jika Filter "All Years" DAN ada lebih dari 1 tahun yang tersedia
     available_years_sorted = sorted(df_raw["Year"].unique().tolist())
     if sel_year == "All Years" and len(available_years_sorted) >= 2:
         latest_yr = available_years_sorted[-1]
@@ -399,7 +427,6 @@ if menu == "🏠 Executive Summary":
     render_alerts()
     st.write("")
 
-    # KPI ROW
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         render_kpi_card("Total Revenue", fmt_currency(total_rev), "$", "#EFF6FF", PRIMARY,
@@ -419,7 +446,6 @@ if menu == "🏠 Executive Summary":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # MIDDLE CHARTS
     col_mid1, col_mid2 = st.columns([3, 2], gap="large")
 
     with col_mid1:
@@ -473,7 +499,6 @@ if menu == "🏠 Executive Summary":
 
     st.markdown("---")
 
-    # DRILL DOWN
     st.markdown('<div class="sec-header"><div class="sec-title">🔎 Drill-Down: Category → Sub-Category</div></div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-desc">Select a category below to see how its sub-categories perform — useful for isolating exactly which products drag down an otherwise healthy category.</div>', unsafe_allow_html=True)
 
@@ -489,7 +514,7 @@ if menu == "🏠 Executive Summary":
             text=sub_drill["Profit"].apply(fmt_currency), textposition="outside"
         ))
         fig_drill.add_vline(x=0, line_color=TEXT_MUTED, line_width=1.5)
-        fig_drill = chart_layout(fig_drill, height=280, show_legend=False)
+        fig_drill = chart_layout(fig_drill, height=300, show_legend=False)
         fig_drill.update_xaxes(title="Total Profit ($)")
         st.plotly_chart(fig_drill, use_container_width=True)
 
@@ -500,7 +525,6 @@ elif menu == "📈 Trend & Seasonality":
     st.title("Trend & Seasonality Analysis")
     st.caption("Track performance over time to identify seasonal peaks and structural margin decay.")
 
-    # PERBAIKAN: Menggunakan M (End of Month) atau ME untuk aggregasi aman
     try:
         monthly_ts = df.set_index("Order Date").resample("ME").agg(
             Sales=("Sales", "sum"), Profit=("Profit", "sum"), Discount=("Discount", "mean")
@@ -560,10 +584,10 @@ elif menu == "📈 Trend & Seasonality":
                 z=pivot_margin.values, x=pivot_margin.columns, y=pivot_margin.index.astype(str),
                 colorscale="RdYlGn", zmid=0,
                 text=[[f"{v:.1f}%" if pd.notna(v) else "" for v in row] for row in pivot_margin.values],
-                texttemplate="%{text}", textfont={"size": 11, "color": "black"},
+                texttemplate="%{text}", textfont={"size": 10, "color": "black"}, # Diperkecil font-nya agar fit di layar HP
                 hovertemplate="Year: %{y}<br>Month: %{x}<br>Margin: %{z:.1f}%<extra></extra>"
             ))
-            fig_heat = chart_layout(fig_heat, height=280, show_legend=False)
+            fig_heat = chart_layout(fig_heat, height=320, show_legend=False)
             st.plotly_chart(fig_heat, use_container_width=True)
 
 # ============================================================
@@ -580,7 +604,6 @@ elif menu == "🌎 Geo-Performance":
     ).reset_index()
     reg_agg["Margin"] = np.where(reg_agg["Revenue"] > 0, (reg_agg["Profit"] / reg_agg["Revenue"] * 100), 0)
 
-    # Safe Alert Region
     if len(reg_agg) >= 2:
         worst_region = reg_agg.loc[reg_agg["Margin"].idxmin()]
         best_region  = reg_agg.loc[reg_agg["Margin"].idxmax()]
@@ -601,7 +624,6 @@ elif menu == "🌎 Geo-Performance":
             st.markdown('<div class="chart-card-title">Regional Revenue vs Profit Margin</div>', unsafe_allow_html=True)
             st.markdown('<div class="chart-card-sub">Bubble size = order volume</div>', unsafe_allow_html=True)
 
-            # Safe Bubble Size Reference
             max_orders = reg_agg["Orders"].max() if not reg_agg.empty else 1
             size_ref = 2. * max_orders / (40.**2) if max_orders > 0 else 1
 
@@ -684,7 +706,6 @@ elif menu == "🛒 Product Portfolio":
         st.markdown('<div class="chart-card-title">Sub-Category Performance Matrix</div>', unsafe_allow_html=True)
         st.markdown('<div class="chart-card-sub">Box size = revenue · Color = margin (red = loss, green = healthy)</div>', unsafe_allow_html=True)
 
-        # Hapus nilai negatif di Sales karena Treemap tidak bisa membaca area negatif
         sub_agg_map = sub_agg[sub_agg["Sales"] > 0]
         if not sub_agg_map.empty:
             fig_tree = px.treemap(
@@ -694,7 +715,7 @@ elif menu == "🛒 Product Portfolio":
             )
             fig_tree.update_traces(
                 hovertemplate="<b>%{label}</b><br>Sales: $%{customdata[1]:,.0f}<br>Profit: $%{customdata[0]:,.0f}<br>Margin: %{customdata[2]:.1f}%<extra></extra>",
-                textfont=dict(color="white", size=13)
+                textfont=dict(color="white", size=11) # Ukuran font Treemap direduksi untuk HP
             )
             fig_tree = chart_layout(fig_tree, height=440)
             fig_tree.update_layout(margin=dict(t=10, l=10, r=10, b=10))
@@ -752,7 +773,6 @@ elif menu == "🚨 Profitability Risks":
     high_df = df_risk[high_mask]
     sales_high = high_df["Sales"].sum()
     
-    # PERBAIKAN: Safe division untuk seluruh variabel di halaman ini
     total_risk_sales = df_risk["Sales"].sum()
     total_risk_len = len(df_risk)
     
@@ -770,7 +790,6 @@ elif menu == "🚨 Profitability Risks":
     """, unsafe_allow_html=True)
     st.write("")
 
-    # PERBAIKAN BUG HTML TEXT BOCOR: render_kpi_card sudah membungkus tanpa newline agar teks sub judul render sebagai div (bukan raw text)
     c1, c2, c3 = st.columns(3)
     with c1:
         render_kpi_card("Orders >20% Discount", f"{len(high_df):,}", "!", "#FEF2F2", DANGER,
