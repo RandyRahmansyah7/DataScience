@@ -34,6 +34,12 @@ PURPLE    = "#8B5CF6"   # Purple
 NEUTRAL   = "#94A3B8"   # Slate
 PALETTE   = ["#2563EB", "#38BDF8", "#818CF8", "#C084FC", "#F472B6"]
 
+# Konfigurasi standar Plotly agar responsif di HP/Tablet
+PLOTLY_CONFIG = {
+    "displayModeBar": False, # Menyembunyikan menu zoom/pan yang mengganggu di layar kecil
+    "responsive": True
+}
+
 # ============================================================
 # GLOBAL CSS (ADAPTIVE LIGHT/DARK MODE & MOBILE RESPONSIVE)
 # ============================================================
@@ -170,7 +176,7 @@ with st.sidebar:
 # ============================================================
 @st.cache_data(show_spinner=False)
 def load_data():
-    candidates = ["SampleSuperstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
+    candidates = ["Sample_-_Superstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
     df = None
     for path in candidates:
         if os.path.exists(path):
@@ -249,19 +255,25 @@ def delta_badge(value, suffix="%", invert=False):
     return f'<span class="kpi-delta {cls}">{arrow} {abs(value):.1f}{suffix}</span>'
 
 def chart_layout(fig, height=380, show_legend=True):
+    # PERBAIKAN CHART RESPONSIVE: Margin automargin dan legend di bawah (bottom) rata tengah
     fig.update_layout(
         height=height,
-        margin=dict(t=40, b=20, l=10, r=10),
+        margin=dict(t=20, b=40, l=10, r=10),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter", size=11), # Menghapus default color agar streamit adaptasi otomatis
+        font=dict(family="Inter", size=11), 
         hoverlabel=dict(font_size=12, font_family="Inter"),
         showlegend=show_legend,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, font=dict(size=10)) if show_legend else None,
+        legend=dict(
+            orientation="h", 
+            yanchor="top", y=-0.15, 
+            xanchor="center", x=0.5, 
+            font=dict(size=10)
+        ) if show_legend else None,
+        autosize=True
     )
-    fig.update_xaxes(showgrid=False, zeroline=False)
-    # Menggunakan warna grid yang aman di dark/light mode
-    fig.update_yaxes(showgrid=True, gridcolor="rgba(128,128,128,0.2)", zeroline=False)
+    fig.update_xaxes(showgrid=False, zeroline=False, automargin=True)
+    fig.update_yaxes(showgrid=True, gridcolor="rgba(128,128,128,0.2)", zeroline=False, automargin=True)
     return fig
 
 def render_kpi_card(label, value, icon, icon_bg, icon_color, delta_val=None, delta_suffix="%", invert_delta=False, sub_text=None, value_color=None):
@@ -456,7 +468,7 @@ if menu == "🏠 Executive Summary":
                 fig_cat = chart_layout(fig_cat, height=340)
                 fig_cat.update_yaxes(title_text="Revenue ($)", secondary_y=False)
                 fig_cat.update_yaxes(title_text="Profit ($)", secondary_y=True, showgrid=False)
-                st.plotly_chart(fig_cat, use_container_width=True)
+                st.plotly_chart(fig_cat, use_container_width=True, config=PLOTLY_CONFIG)
 
         with col_mid2:
             with st.container(border=True):
@@ -480,7 +492,7 @@ if menu == "🏠 Executive Summary":
                                               x=0.5, y=0.5, font_size=15, showarrow=False, font_color=DANGER)]
                         )
                         fig_leak = chart_layout(fig_leak, height=340, show_legend=False)
-                        st.plotly_chart(fig_leak, use_container_width=True)
+                        st.plotly_chart(fig_leak, use_container_width=True, config=PLOTLY_CONFIG)
                     else:
                         st.success("🎉 No loss-making transactions in this view.")
                 else:
@@ -506,7 +518,7 @@ if menu == "🏠 Executive Summary":
                 fig_drill.add_vline(x=0, line_color="gray", line_width=1.5)
                 fig_drill = chart_layout(fig_drill, height=300, show_legend=False)
                 fig_drill.update_xaxes(title="Total Profit ($)")
-                st.plotly_chart(fig_drill, use_container_width=True)
+                st.plotly_chart(fig_drill, use_container_width=True, config=PLOTLY_CONFIG)
 
 # ============================================================
 # PAGE 2: TREND & SEASONALITY
@@ -555,7 +567,7 @@ elif menu == "📈 Trend & Seasonality":
         fig_ts.update_layout(hovermode="x unified")
         fig_ts.update_yaxes(title_text="Monthly Revenue ($)", secondary_y=False)
         fig_ts.update_yaxes(title_text="Profit Margin (%)", secondary_y=True, showgrid=False)
-        st.plotly_chart(fig_ts, use_container_width=True)
+        st.plotly_chart(fig_ts, use_container_width=True, config=PLOTLY_CONFIG)
 
     with st.container(border=True):
         st.markdown('<div class="chart-card-title">Seasonality Matrix — Margin by Month & Year</div>', unsafe_allow_html=True)
@@ -574,11 +586,11 @@ elif menu == "📈 Trend & Seasonality":
                 z=pivot_margin.values, x=pivot_margin.columns, y=pivot_margin.index.astype(str),
                 colorscale="RdYlGn", zmid=0,
                 text=[[f"{v:.1f}%" if pd.notna(v) else "" for v in row] for row in pivot_margin.values],
-                texttemplate="%{text}", textfont={"size": 10, "color": "black"}, 
+                texttemplate="%{text}",
                 hovertemplate="Year: %{y}<br>Month: %{x}<br>Margin: %{z:.1f}%<extra></extra>"
             ))
             fig_heat = chart_layout(fig_heat, height=320, show_legend=False)
-            st.plotly_chart(fig_heat, use_container_width=True)
+            st.plotly_chart(fig_heat, use_container_width=True, config=PLOTLY_CONFIG)
 
 # ============================================================
 # PAGE 3: GEO-PERFORMANCE
@@ -630,7 +642,7 @@ elif menu == "🌎 Geo-Performance":
                 fig_reg = chart_layout(fig_reg, height=380, show_legend=False)
                 fig_reg.update_layout(xaxis_title="Total Revenue ($)", yaxis_title="Profit Margin (%)")
                 fig_reg.add_hline(y=0, line_dash="dash", line_color=DANGER, annotation_text="Break-even")
-                st.plotly_chart(fig_reg, use_container_width=True)
+                st.plotly_chart(fig_reg, use_container_width=True, config=PLOTLY_CONFIG)
 
         with col2:
             with st.container(border=True):
@@ -661,7 +673,7 @@ elif menu == "🌎 Geo-Performance":
                     ))
                     fig_top = chart_layout(fig_top, height=340, show_legend=False)
                     fig_top.update_layout(title="🏆 Top 10 Most Profitable States", xaxis_title="Profit ($)")
-                    st.plotly_chart(fig_top, use_container_width=True)
+                    st.plotly_chart(fig_top, use_container_width=True, config=PLOTLY_CONFIG)
             with col_s2:
                 with st.container(border=True):
                     bot_states = state_agg.nsmallest(10, "Profit").sort_values("Profit", ascending=False)
@@ -671,7 +683,7 @@ elif menu == "🌎 Geo-Performance":
                     ))
                     fig_bot = chart_layout(fig_bot, height=340, show_legend=False)
                     fig_bot.update_layout(title="🚨 Top 10 States with Highest Losses", xaxis_title="Losses ($)")
-                    st.plotly_chart(fig_bot, use_container_width=True)
+                    st.plotly_chart(fig_bot, use_container_width=True, config=PLOTLY_CONFIG)
     else:
         st.info("Region information not found in the dataset.")
 
@@ -710,11 +722,11 @@ elif menu == "🛒 Product Portfolio":
                 )
                 fig_tree.update_traces(
                     hovertemplate="<b>%{label}</b><br>Sales: $%{customdata[1]:,.0f}<br>Profit: $%{customdata[0]:,.0f}<br>Margin: %{customdata[2]:.1f}%<extra></extra>",
-                    textfont=dict(color="white", size=11)
                 )
                 fig_tree = chart_layout(fig_tree, height=440)
-                fig_tree.update_layout(margin=dict(t=10, l=10, r=10, b=10))
-                st.plotly_chart(fig_tree, use_container_width=True)
+                # Full margin untuk treemap
+                fig_tree.update_layout(margin=dict(t=10, l=0, r=0, b=0))
+                st.plotly_chart(fig_tree, use_container_width=True, config=PLOTLY_CONFIG)
 
         st.write("")
         st.markdown('<div class="sec-header"><div class="sec-title">🔎 Drill-Down: SKU-Level Detail</div></div>', unsafe_allow_html=True)
@@ -736,7 +748,7 @@ elif menu == "🛒 Product Portfolio":
                         fig_tp = px.bar(top_p, x="Profit", y="Short", color="Category", orientation="h", color_discrete_sequence=PALETTE)
                         fig_tp = chart_layout(fig_tp, height=380, show_legend=False)
                         fig_tp.update_layout(yaxis={"categoryorder":"total ascending"}, yaxis_title=None, xaxis_title="Profit ($)")
-                        st.plotly_chart(fig_tp, use_container_width=True)
+                        st.plotly_chart(fig_tp, use_container_width=True, config=PLOTLY_CONFIG)
                     else:
                         st.info("No data.")
             with col_p2:
@@ -748,7 +760,7 @@ elif menu == "🛒 Product Portfolio":
                         fig_bp = px.bar(bot_p, x="Profit", y="Short", color="Category", orientation="h", color_discrete_sequence=PALETTE)
                         fig_bp = chart_layout(fig_bp, height=380, show_legend=False)
                         fig_bp.update_layout(yaxis={"categoryorder":"total descending"}, yaxis_title=None, xaxis_title="Loss ($)")
-                        st.plotly_chart(fig_bp, use_container_width=True)
+                        st.plotly_chart(fig_bp, use_container_width=True, config=PLOTLY_CONFIG)
                     else:
                         st.info("No data.")
     else:
@@ -823,7 +835,7 @@ elif menu == "🚨 Profitability Risks":
         fig_tier.update_yaxes(title_text="Total Profit ($)", secondary_y=True, showgrid=False)
         fig_tier.add_vrect(x0=2.5, x1=6.5, fillcolor=DANGER, opacity=0.08, layer="below", line_width=0)
         fig_tier.add_annotation(x=4.5, y=1, xref="x", yref="paper", text="⚠️ Danger Zone", showarrow=False, font=dict(color=DANGER))
-        st.plotly_chart(fig_tier, use_container_width=True)
+        st.plotly_chart(fig_tier, use_container_width=True, config=PLOTLY_CONFIG)
 
     st.write("")
     st.markdown('<div class="sec-header"><div class="sec-title">✅ Recommended Actions</div></div>', unsafe_allow_html=True)
@@ -900,7 +912,7 @@ elif menu == "👥 Customer Insights":
                 fig_scatter.update_traces(marker=dict(size=8, line=dict(width=0.5, color="white")))
                 fig_scatter.update_layout(xaxis_title="Lifetime Revenue ($)", yaxis_title="Lifetime Profit ($)")
                 fig_scatter.add_hline(y=0, line_color="#CBD5E1", line_width=2)
-                st.plotly_chart(fig_scatter, use_container_width=True)
+                st.plotly_chart(fig_scatter, use_container_width=True, config=PLOTLY_CONFIG)
 
         col_t1, col_t2 = st.columns(2)
         with col_t1:
