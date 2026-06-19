@@ -932,4 +932,3 @@ st.markdown(f"""
     Retail Profitability Analyzer · Dataset: Sample Superstore (Kaggle) · Built with Streamlit, Pandas & Plotly
 </div>
 """, unsafe_allow_html=True)
-""" ] saya mau menambahkan fitur yaitu saya ingin upload file dataset saya supaya mempermudahkan saya, dan di sesuaikan dengan tema light nya dan fitur fitur yang saya berikan sebelumnya disesuaikan dengan file yang diupload. dataset yang saya berikan tidak di drop ya, jadi kalau dataset nya sama maka bisa kebaca.
