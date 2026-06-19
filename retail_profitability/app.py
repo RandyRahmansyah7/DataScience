@@ -1,6 +1,6 @@
 """
 Retail Profitability Analyzer — Enhanced Executive Dashboard
-Light Mode Premium Design + Decision-Support Features
+Light Mode Premium Design + Decision-Support Features + File Uploader
 
 Run with: streamlit run app.py
 """
@@ -43,9 +43,8 @@ NEUTRAL   = "#94A3B8"   # Slate — neutral
 PALETTE   = ["#2563EB", "#38BDF8", "#818CF8", "#C084FC", "#F472B6"]
 
 # ============================================================
-# GLOBAL CSS (WITH MOBILE RESPONSIVENESS)
+# GLOBAL CSS (WITH MOBILE RESPONSIVENESS & BUG FIX)
 # ============================================================
-# PERBAIKAN: Menghapus 'header' dari visibility: hidden agar tombol menu (hamburger) tetap muncul di Mobile
 st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -54,7 +53,7 @@ st.markdown(f"""
 
     .stApp {{ background-color: {BG_MAIN}; }}
     
-    /* Hanya sembunyikan footer bawaan Streamlit, biarkan Header agar menu hamburger muncul di HP */
+    /* Sembunyikan footer bawaan Streamlit, biarkan Header agar menu hamburger muncul di HP */
     footer {{visibility: hidden;}}
     
     .block-container {{ padding-top: 1rem; padding-bottom: 3rem; max-width: 1280px; }}
@@ -78,13 +77,8 @@ st.markdown(f"""
 
     /* ===== ALERT BANNER ===== */
     .alert-banner {{
-        border-radius: 10px;
-        padding: 14px 18px;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        border: 1px solid;
+        border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+        display: flex; align-items: flex-start; gap: 12px; border: 1px solid;
     }}
     .alert-critical {{ background: #FEF2F2; border-color: #FECACA; }}
     .alert-warning  {{ background: #FFFBEB; border-color: #FDE68A; }}
@@ -96,40 +90,20 @@ st.markdown(f"""
     .alert-warning  .alert-text b {{ color: #B45309; }}
     .alert-success  .alert-text b {{ color: {SUCCESS}; }}
 
-    /* ===== KPI CARD (custom, replaces st.metric) ===== */
+    /* ===== KPI CARD ===== */
     .kpi-card {{
-        background: {CARD_BG};
-        border: 1px solid {CARD_BORDER};
-        border-radius: 14px;
-        padding: 20px 22px;
-        height: 100%;
-        box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+        background: {CARD_BG}; border: 1px solid {CARD_BORDER}; border-radius: 14px;
+        padding: 20px 22px; height: 100%; box-shadow: 0 1px 3px rgba(15,23,42,0.04);
         transition: box-shadow 0.2s ease, transform 0.2s ease;
     }}
-    .kpi-card:hover {{
-        box-shadow: 0 8px 20px rgba(15,23,42,0.08);
-        transform: translateY(-2px);
-    }}
+    .kpi-card:hover {{ box-shadow: 0 8px 20px rgba(15,23,42,0.08); transform: translateY(-2px); }}
     .kpi-top {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }}
-    .kpi-label {{
-        font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px;
-        text-transform: uppercase; color: {TEXT_MUTED};
-    }}
-    .kpi-icon {{
-        width: 32px; height: 32px; border-radius: 9px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 15px; flex-shrink: 0;
-    }}
+    .kpi-label {{ font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: {TEXT_MUTED}; }}
+    .kpi-icon {{ width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }}
     .kpi-value {{ font-size: 28px; font-weight: 800; color: {TEXT_MAIN}; line-height: 1.1; margin-bottom: 8px; }}
-    .kpi-value.danger {{ color: {DANGER}; }}
-    .kpi-value.success {{ color: {SUCCESS}; }}
-    .kpi-delta {{
-        font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;
-        padding: 2px 8px; border-radius: 6px;
-    }}
     .delta-up   {{ background: #F0FDF4; color: {SUCCESS}; }}
     .delta-down {{ background: #FEF2F2; color: {DANGER}; }}
-    .delta-flat {{ background: #F1F5F9; color: {TEXT_MUTED}; }}
+    .kpi-delta {{ font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; }}
     .kpi-sub {{ font-size: 12px; color: {TEXT_DIM}; margin-top: 6px; }}
 
     /* ===== SECTION HEADER ===== */
@@ -137,22 +111,21 @@ st.markdown(f"""
     .sec-title {{ font-size: 19px; font-weight: 800; color: {TEXT_MAIN}; }}
     .sec-desc  {{ font-size: 13px; color: {TEXT_MUTED}; margin: 4px 0 16px 0; max-width: 760px; line-height: 1.6; }}
 
-    /* ===== CHART CARD WRAPPER ===== */
-    .chart-card-title {{ font-size: 14.5px; font-weight: 700; color: {TEXT_MAIN}; margin-bottom: 2px; }}
-    .chart-card-sub   {{ font-size: 12px; color: {TEXT_DIM}; margin-bottom: 10px; }}
+    /* ===== PERBAIKAN BUG HP: ST.CONTAINER STYLING (SAFE) ===== */
+    [data-testid="stVerticalBlockBorderWrapper"] {{
+        background-color: {CARD_BG};
+        border-radius: 14px;
+        box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+        border: 1px solid {CARD_BORDER};
+    }}
+    .chart-card-title {{ font-size: 14.5px; font-weight: 700; color: {TEXT_MAIN}; margin-bottom: 2px; padding: 0 5px; }}
+    .chart-card-sub   {{ font-size: 12px; color: {TEXT_DIM}; margin-bottom: 10px; padding: 0 5px; }}
 
-    /* ===== ACTION CARD (recommendation) ===== */
-    .action-card {{
-        background: {CARD_BG}; border: 1px solid {CARD_BORDER}; border-radius: 12px;
-        padding: 18px 20px; margin-bottom: 12px;
-    }}
-    .action-badge {{
-        font-size: 10.5px; font-weight: 700; padding: 3px 10px; border-radius: 5px;
-        display: inline-block; margin-bottom: 10px;
-    }}
+    /* ===== ACTION CARD ===== */
+    .action-card {{ background: {CARD_BG}; border: 1px solid {CARD_BORDER}; border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; }}
+    .action-badge {{ font-size: 10.5px; font-weight: 700; padding: 3px 10px; border-radius: 5px; display: inline-block; margin-bottom: 10px; }}
     .action-badge.p1 {{ background: #FEF2F2; color: {DANGER}; }}
     .action-badge.p2 {{ background: #FFFBEB; color: #B45309; }}
-    .action-badge.p3 {{ background: #EFF6FF; color: {PRIMARY}; }}
     .action-title {{ font-size: 15px; font-weight: 700; color: {TEXT_MAIN}; margin-bottom: 6px; }}
     .action-body  {{ font-size: 13px; color: {TEXT_MUTED}; line-height: 1.6; margin-bottom: 12px; }}
     .action-stats {{ display: flex; flex-wrap: wrap; gap: 24px; padding-top: 10px; border-top: 1px solid {CARD_BORDER}; }}
@@ -161,30 +134,26 @@ st.markdown(f"""
 
     h1 {{ font-weight: 800 !important; color: {TEXT_MAIN}; margin-bottom: 0.1rem !important; }}
     h2, h3 {{ font-weight: 700 !important; color: {TEXT_MAIN}; }}
-
     hr {{ margin: 1.8rem 0 !important; border-color: {CARD_BORDER}; opacity: 0.8; }}
-
     .footer {{ text-align:center; padding: 24px 0 4px 0; color: {TEXT_DIM}; font-size: 12px; }}
 
-    /* ===== RESPONSIVE MOBILE & TABLET MEDIA QUERIES ===== */
+    /* ===== DARK MODE ===== */
+    @media (prefers-color-scheme: dark) {{
+        [data-testid="stVerticalBlockBorderWrapper"] {{ background-color: #1e293b; border-color: #334155; }}
+    }}
+
+    /* ===== MOBILE RESPONSIVE ===== */
     @media (max-width: 768px) {{
-        /* Menambahkan ruang kosong di atas agar judul tidak tertutup header di HP */
-        .block-container {{ padding-top: 2rem; padding-bottom: 1.5rem; padding-left: 1rem; padding-right: 1rem; }}
-        
-        /* Adjusting KPI cards for smaller screens */
+        .block-container {{ padding-top: 2rem; padding-bottom: 1.5rem; padding-left: 0.8rem; padding-right: 0.8rem; }}
         .kpi-card {{ padding: 14px 16px; }}
         .kpi-value {{ font-size: 22px; margin-bottom: 5px; }}
         .kpi-icon {{ width: 26px; height: 26px; font-size: 12px; }}
         .kpi-label {{ font-size: 10px; }}
         .kpi-sub {{ font-size: 11px; }}
-        
-        /* Typography downscaling */
         h1 {{ font-size: 1.6rem !important; margin-top: 10px !important; }}
         .sec-title {{ font-size: 16px; }}
         .sec-desc {{ font-size: 12px; margin-bottom: 12px; }}
         .chart-card-title {{ font-size: 13.5px; }}
-        
-        /* Flex adjustments to prevent horizontal overflow */
         .action-stats {{ gap: 14px; flex-direction: row; }}
         .alert-banner {{ padding: 12px 14px; align-items: center; }}
         .alert-icon {{ font-size: 16px; }}
@@ -194,30 +163,77 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ============================================================
+# SIDEBAR — UPLOAD & NAVIGATION
+# ============================================================
+with st.sidebar:
+    st.markdown("""
+    <div class="sidebar-logo">
+        <div class="sidebar-logo-mark">R</div>
+        <div>
+            <div class="sidebar-logo-text">SuperStore</div>
+            <div class="sidebar-logo-sub">EXECUTIVE DASHBOARD</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
+
+    # FITUR BARU: UPLOAD FILE
+    st.markdown("**📂 Upload Dataset**")
+    uploaded_file = st.file_uploader("Upload CSV file (Optional)", type=["csv"], help="Upload dataset Anda sendiri. Jika kosong, sistem menggunakan data default.")
+    st.markdown("---")
+
+    menu = st.radio(
+        "Navigation",
+        ["🏠 Executive Summary", "📈 Trend & Seasonality", "🌎 Geo-Performance",
+         "🛒 Product Portfolio", "🚨 Profitability Risks", "👥 Customer Insights"],
+        label_visibility="collapsed"
+    )
+
+# ============================================================
 # DATA LOADING
 # ============================================================
-@st.cache_data
-def load_data():
-    candidates = ["SampleSuperstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
+@st.cache_data(show_spinner=False)
+def load_data(file_obj):
     df = None
-    for path in candidates:
-        if os.path.exists(path):
-            df = pd.read_csv(path, encoding="latin-1")
-            break
+    if file_obj is not None:
+        # Baca dari file yang diupload user
+        try:
+            df = pd.read_csv(file_obj, encoding="latin-1")
+        except Exception as e:
+            st.error(f"Error reading uploaded file: {e}")
+            return None
+    else:
+        # Fallback ke dataset lokal
+        candidates = ["SampleSuperstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
+        for path in candidates:
+            if os.path.exists(path):
+                df = pd.read_csv(path, encoding="latin-1")
+                break
 
     if df is None:
         return None
 
+    # Membersihkan nama kolom
     df.columns = [c.strip() for c in df.columns]
-    df["Order Date"] = pd.to_datetime(df["Order Date"], errors="coerce")
-    df = df.dropna(subset=["Order Date"]).copy()
     
-    df["Ship Date"]  = pd.to_datetime(df["Ship Date"], errors="coerce")
-    df["Year"]       = df["Order Date"].dt.year.astype(int).astype(str)
-    df["Month"]      = df["Order Date"].dt.month
-    df["Month Name"] = df["Order Date"].dt.strftime("%b")
-    df["Quarter"]    = df["Order Date"].dt.quarter
+    # Standarisasi Tanggal & Kolom
+    if "Order Date" in df.columns:
+        df["Order Date"] = pd.to_datetime(df["Order Date"], errors="coerce")
+        df = df.dropna(subset=["Order Date"]).copy()
+        df["Year"]       = df["Order Date"].dt.year.astype(int).astype(str)
+        df["Month"]      = df["Order Date"].dt.month
+        df["Month Name"] = df["Order Date"].dt.strftime("%b")
+    else:
+        # Fallback jika kolom tanggal tidak ada
+        df["Year"] = "All"
+        df["Month Name"] = "All"
+        df["Order Date"] = pd.Timestamp.today()
     
+    # Pastikan metrik utama tersedia, jika tidak buat nilai 0
+    for col in ["Sales", "Profit", "Discount"]:
+        if col not in df.columns:
+            df[col] = 0
+
     df["Profit Margin"] = np.where(df["Sales"] > 0, df["Profit"] / df["Sales"], 0)
     df["Is Loss"]    = df["Profit"] < 0
 
@@ -226,10 +242,10 @@ def load_data():
     df["Discount Bucket"] = pd.cut(df["Discount"], bins=bins, labels=labels)
     return df
 
-df_raw = load_data()
+df_raw = load_data(uploaded_file)
 
-if df_raw is None:
-    st.error("⚠️ Dataset tidak ditemukan. Pastikan file CSV tersedia di folder yang benar.")
+if df_raw is None or df_raw.empty:
+    st.error("⚠️ Dataset tidak ditemukan atau kosong. Silakan upload file CSV yang valid.")
     st.stop()
 
 # ============================================================
@@ -285,38 +301,28 @@ def render_kpi_card(label, value, icon, icon_bg, icon_color, delta_val=None, del
     st.markdown(html_output, unsafe_allow_html=True)
 
 # ============================================================
-# SIDEBAR — NAVIGATION + GLOBAL FILTERS
+# SIDEBAR — GLOBAL FILTERS
 # ============================================================
 with st.sidebar:
-    st.markdown("""
-    <div class="sidebar-logo">
-        <div class="sidebar-logo-mark">R</div>
-        <div>
-            <div class="sidebar-logo-text">SuperStore</div>
-            <div class="sidebar-logo-sub">EXECUTIVE DASHBOARD</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown("---")
-
-    menu = st.radio(
-        "Navigation",
-        ["🏠 Executive Summary", "📈 Trend & Seasonality", "🌎 Geo-Performance",
-         "🛒 Product Portfolio", "🚨 Profitability Risks", "👥 Customer Insights"],
-        label_visibility="collapsed"
-    )
-
     st.markdown("---")
     st.markdown("**🎛️ Global Filters**")
 
     available_years = sorted(df_raw["Year"].unique().tolist(), reverse=True)
     sel_year = st.selectbox("Year", ["All Years"] + available_years)
 
-    available_regions = sorted(df_raw["Region"].dropna().unique().tolist())
-    sel_region = st.selectbox("Region", ["All Regions"] + available_regions)
+    # Pastikan Region ada di dataset
+    if "Region" in df_raw.columns:
+        available_regions = sorted(df_raw["Region"].dropna().unique().tolist())
+        sel_region = st.selectbox("Region", ["All Regions"] + available_regions)
+    else:
+        sel_region = "All Regions"
 
-    available_segments = sorted(df_raw["Segment"].dropna().unique().tolist())
-    sel_segment = st.selectbox("Segment", ["All Segments"] + available_segments)
+    # Pastikan Segment ada di dataset
+    if "Segment" in df_raw.columns:
+        available_segments = sorted(df_raw["Segment"].dropna().unique().tolist())
+        sel_segment = st.selectbox("Segment", ["All Segments"] + available_segments)
+    else:
+        sel_segment = "All Segments"
 
     st.markdown("---")
     st.caption("⚙️ Data Management")
@@ -329,9 +335,9 @@ with st.sidebar:
 df = df_raw.copy()
 if sel_year != "All Years":
     df = df[df["Year"] == sel_year]
-if sel_region != "All Regions":
+if sel_region != "All Regions" and "Region" in df.columns:
     df = df[df["Region"] == sel_region]
-if sel_segment != "All Segments":
+if sel_segment != "All Segments" and "Segment" in df.columns:
     df = df[df["Segment"] == sel_segment]
 
 if df.empty:
@@ -356,9 +362,6 @@ high_disc       = df[df["Discount"] > 0.20]
 high_disc_loss  = high_disc["Profit"].sum()
 high_disc_count = len(high_disc)
 
-# ============================================================
-# AUTOMATED ALERT ENGINE
-# ============================================================
 def render_alerts():
     alerts = []
     if avg_margin < 8:
@@ -408,8 +411,8 @@ if menu == "🏠 Executive Summary":
         latest_yr = available_years_sorted[-1]
         prev_yr   = available_years_sorted[-2]
         base = df_raw.copy()
-        if sel_region != "All Regions": base = base[base["Region"] == sel_region]
-        if sel_segment != "All Segments": base = base[base["Segment"] == sel_segment]
+        if sel_region != "All Regions" and "Region" in base.columns: base = base[base["Region"] == sel_region]
+        if sel_segment != "All Segments" and "Segment" in base.columns: base = base[base["Segment"] == sel_segment]
 
         d_latest = base[base["Year"] == latest_yr]
         d_prev   = base[base["Year"] == prev_yr]
@@ -449,77 +452,82 @@ if menu == "🏠 Executive Summary":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    col_mid1, col_mid2 = st.columns([3, 2], gap="large")
+    if "Category" in df.columns:
+        col_mid1, col_mid2 = st.columns([3, 2], gap="large")
 
-    with col_mid1:
-        with st.container(border=True):
-            st.markdown('<div class="chart-card-title">Revenue & Profit Contribution by Category</div>', unsafe_allow_html=True)
-            st.markdown('<div class="chart-card-sub">Click legend items to isolate a series</div>', unsafe_allow_html=True)
+        with col_mid1:
+            with st.container(border=True):
+                st.markdown('<div class="chart-card-title">Revenue & Profit Contribution by Category</div>', unsafe_allow_html=True)
+                st.markdown('<div class="chart-card-sub">Click legend items to isolate a series</div>', unsafe_allow_html=True)
 
-            cat_agg = df.groupby("Category").agg(Sales=("Sales", "sum"), Profit=("Profit", "sum")).reset_index()
-            
-            fig_cat = make_subplots(specs=[[{"secondary_y": True}]])
-            fig_cat.add_trace(go.Bar(
-                x=cat_agg["Category"], y=cat_agg["Sales"], name="Revenue",
-                marker_color=PRIMARY, opacity=0.85,
-                text=cat_agg["Sales"].apply(fmt_currency), textposition="outside"
-            ), secondary_y=False)
-            fig_cat.add_trace(go.Scatter(
-                x=cat_agg["Category"], y=cat_agg["Profit"], name="Profit",
-                mode="lines+markers", line=dict(color=SUCCESS, width=3),
-                marker=dict(size=10, symbol="diamond")
-            ), secondary_y=True)
+                cat_agg = df.groupby("Category").agg(Sales=("Sales", "sum"), Profit=("Profit", "sum")).reset_index()
+                
+                fig_cat = make_subplots(specs=[[{"secondary_y": True}]])
+                fig_cat.add_trace(go.Bar(
+                    x=cat_agg["Category"], y=cat_agg["Sales"], name="Revenue",
+                    marker_color=PRIMARY, opacity=0.85,
+                    text=cat_agg["Sales"].apply(fmt_currency), textposition="outside"
+                ), secondary_y=False)
+                fig_cat.add_trace(go.Scatter(
+                    x=cat_agg["Category"], y=cat_agg["Profit"], name="Profit",
+                    mode="lines+markers", line=dict(color=SUCCESS, width=3),
+                    marker=dict(size=10, symbol="diamond")
+                ), secondary_y=True)
 
-            fig_cat = chart_layout(fig_cat, height=340)
-            fig_cat.update_yaxes(title_text="Revenue ($)", secondary_y=False)
-            fig_cat.update_yaxes(title_text="Profit ($)", secondary_y=True, showgrid=False)
-            st.plotly_chart(fig_cat, use_container_width=True)
+                fig_cat = chart_layout(fig_cat, height=340)
+                fig_cat.update_yaxes(title_text="Revenue ($)", secondary_y=False)
+                fig_cat.update_yaxes(title_text="Profit ($)", secondary_y=True, showgrid=False)
+                st.plotly_chart(fig_cat, use_container_width=True)
 
-    with col_mid2:
-        with st.container(border=True):
-            st.markdown('<div class="chart-card-title">Profit Leaks by Region</div>', unsafe_allow_html=True)
-            st.markdown('<div class="chart-card-sub">Where loss-making transactions concentrate</div>', unsafe_allow_html=True)
+        with col_mid2:
+            with st.container(border=True):
+                st.markdown('<div class="chart-card-title">Profit Leaks by Region</div>', unsafe_allow_html=True)
+                st.markdown('<div class="chart-card-sub">Where loss-making transactions concentrate</div>', unsafe_allow_html=True)
 
-            loss_df = df[df["Is Loss"]]
-            if not loss_df.empty:
-                total_loss_val = abs(loss_df["Profit"].sum())
-                loss_by_reg = loss_df.groupby("Region")["Profit"].sum().abs().reset_index()
-                loss_by_reg = loss_by_reg.sort_values("Profit", ascending=False)
+                if "Region" in df.columns:
+                    loss_df = df[df["Is Loss"]]
+                    if not loss_df.empty:
+                        total_loss_val = abs(loss_df["Profit"].sum())
+                        loss_by_reg = loss_df.groupby("Region")["Profit"].sum().abs().reset_index()
+                        loss_by_reg = loss_by_reg.sort_values("Profit", ascending=False)
 
-                fig_leak = go.Figure(go.Pie(
-                    labels=loss_by_reg["Region"], values=loss_by_reg["Profit"], hole=0.62,
-                    marker_colors=[DANGER, "#F87171", "#FCA5A5", "#FEE2E2"],
-                    textinfo="percent+label"
+                        fig_leak = go.Figure(go.Pie(
+                            labels=loss_by_reg["Region"], values=loss_by_reg["Profit"], hole=0.62,
+                            marker_colors=[DANGER, "#F87171", "#FCA5A5", "#FEE2E2"],
+                            textinfo="percent+label"
+                        ))
+                        fig_leak.update_layout(
+                            annotations=[dict(text=f"Total Loss<br><b>{fmt_currency(total_loss_val)}</b>",
+                                              x=0.5, y=0.5, font_size=15, showarrow=False, font_color=DANGER)]
+                        )
+                        fig_leak = chart_layout(fig_leak, height=340, show_legend=False)
+                        st.plotly_chart(fig_leak, use_container_width=True)
+                    else:
+                        st.success("🎉 No loss-making transactions in this view.")
+                else:
+                    st.info("Region column not found in dataset.")
+
+        st.markdown("---")
+
+        if "Sub-Category" in df.columns:
+            st.markdown('<div class="sec-header"><div class="sec-title">🔎 Drill-Down: Category → Sub-Category</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-desc">Select a category below to see how its sub-categories perform.</div>', unsafe_allow_html=True)
+
+            drill_cat = st.selectbox("Select a category to drill into:", sorted(df["Category"].unique()), key="exec_drill")
+            drill_df = df[df["Category"] == drill_cat]
+            sub_drill = drill_df.groupby("Sub-Category").agg(Sales=("Sales", "sum"), Profit=("Profit", "sum")).reset_index()
+            sub_drill = sub_drill.sort_values("Profit")
+
+            with st.container(border=True):
+                fig_drill = go.Figure(go.Bar(
+                    x=sub_drill["Profit"], y=sub_drill["Sub-Category"], orientation="h",
+                    marker_color=[DANGER if p < 0 else SUCCESS for p in sub_drill["Profit"]],
+                    text=sub_drill["Profit"].apply(fmt_currency), textposition="outside"
                 ))
-                fig_leak.update_layout(
-                    annotations=[dict(text=f"Total Loss<br><b>{fmt_currency(total_loss_val)}</b>",
-                                      x=0.5, y=0.5, font_size=15, showarrow=False, font_color=DANGER)]
-                )
-                fig_leak = chart_layout(fig_leak, height=340, show_legend=False)
-                st.plotly_chart(fig_leak, use_container_width=True)
-            else:
-                st.success("🎉 No loss-making transactions in this view.")
-
-    st.markdown("---")
-
-    st.markdown('<div class="sec-header"><div class="sec-title">🔎 Drill-Down: Category → Sub-Category</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-desc">Select a category below to see how its sub-categories perform — useful for isolating exactly which products drag down an otherwise healthy category.</div>', unsafe_allow_html=True)
-
-    drill_cat = st.selectbox("Select a category to drill into:", sorted(df["Category"].unique()), key="exec_drill")
-    drill_df = df[df["Category"] == drill_cat]
-    sub_drill = drill_df.groupby("Sub-Category").agg(Sales=("Sales", "sum"), Profit=("Profit", "sum")).reset_index()
-    sub_drill = sub_drill.sort_values("Profit")
-
-    with st.container(border=True):
-        fig_drill = go.Figure(go.Bar(
-            x=sub_drill["Profit"], y=sub_drill["Sub-Category"], orientation="h",
-            marker_color=[DANGER if p < 0 else SUCCESS for p in sub_drill["Profit"]],
-            text=sub_drill["Profit"].apply(fmt_currency), textposition="outside"
-        ))
-        fig_drill.add_vline(x=0, line_color=TEXT_MUTED, line_width=1.5)
-        fig_drill = chart_layout(fig_drill, height=300, show_legend=False)
-        fig_drill.update_xaxes(title="Total Profit ($)")
-        st.plotly_chart(fig_drill, use_container_width=True)
+                fig_drill.add_vline(x=0, line_color=TEXT_MUTED, line_width=1.5)
+                fig_drill = chart_layout(fig_drill, height=300, show_legend=False)
+                fig_drill.update_xaxes(title="Total Profit ($)")
+                st.plotly_chart(fig_drill, use_container_width=True)
 
 # ============================================================
 # PAGE 2: TREND & SEASONALITY
@@ -574,7 +582,7 @@ elif menu == "📈 Trend & Seasonality":
         st.markdown('<div class="chart-card-title">Seasonality Matrix — Margin by Month & Year</div>', unsafe_allow_html=True)
         st.markdown('<div class="chart-card-sub">Red cells indicate months that consistently underperform on margin</div>', unsafe_allow_html=True)
 
-        if 'Year' in df.columns and 'Month' in df.columns:
+        if 'Year' in df.columns and 'Month Name' in df.columns:
             sea_df = df.groupby(["Year", "Month", "Month Name"]).agg(Sales=("Sales", "sum"), Profit=("Profit", "sum")).reset_index()
             sea_df["Margin"] = np.where(sea_df["Sales"] > 0, (sea_df["Profit"] / sea_df["Sales"] * 100), 0)
             
@@ -587,7 +595,7 @@ elif menu == "📈 Trend & Seasonality":
                 z=pivot_margin.values, x=pivot_margin.columns, y=pivot_margin.index.astype(str),
                 colorscale="RdYlGn", zmid=0,
                 text=[[f"{v:.1f}%" if pd.notna(v) else "" for v in row] for row in pivot_margin.values],
-                texttemplate="%{text}", textfont={"size": 10, "color": "black"}, # Diperkecil font-nya agar fit di layar HP
+                texttemplate="%{text}", textfont={"size": 10, "color": "black"}, 
                 hovertemplate="Year: %{y}<br>Month: %{x}<br>Margin: %{z:.1f}%<extra></extra>"
             ))
             fig_heat = chart_layout(fig_heat, height=320, show_legend=False)
@@ -600,89 +608,93 @@ elif menu == "🌎 Geo-Performance":
     st.title("Geographical Performance")
     st.caption("Identify highly profitable regions and isolate areas causing margin dilution.")
 
-    reg_agg = df.groupby("Region").agg(
-        Revenue=("Sales", "sum"), Profit=("Profit", "sum"),
-        Orders=(order_col, "nunique" if "Order ID" in df.columns else "count"), 
-        AvgDiscount=("Discount", "mean")
-    ).reset_index()
-    reg_agg["Margin"] = np.where(reg_agg["Revenue"] > 0, (reg_agg["Profit"] / reg_agg["Revenue"] * 100), 0)
+    if "Region" in df.columns:
+        reg_agg = df.groupby("Region").agg(
+            Revenue=("Sales", "sum"), Profit=("Profit", "sum"),
+            Orders=(order_col, "nunique" if "Order ID" in df.columns else "count"), 
+            AvgDiscount=("Discount", "mean")
+        ).reset_index()
+        reg_agg["Margin"] = np.where(reg_agg["Revenue"] > 0, (reg_agg["Profit"] / reg_agg["Revenue"] * 100), 0)
 
-    if len(reg_agg) >= 2:
-        worst_region = reg_agg.loc[reg_agg["Margin"].idxmin()]
-        best_region  = reg_agg.loc[reg_agg["Margin"].idxmax()]
-        gap = best_region["Margin"] - worst_region["Margin"]
-        if gap > 5:
-            st.markdown(f"""
-            <div class="alert-banner alert-warning">
-                <div class="alert-icon">🟡</div>
-                <div class="alert-text"><b>{worst_region['Region']}</b> trails <b>{best_region['Region']}</b> by {gap:.1f} percentage points in margin
-                ({worst_region['Margin']:.1f}% vs {best_region['Margin']:.1f}%) despite generating {fmt_currency(worst_region['Revenue'])} in revenue — a discount policy gap, not a demand problem.</div>
-            </div>
-            """, unsafe_allow_html=True)
+        if len(reg_agg) >= 2:
+            worst_region = reg_agg.loc[reg_agg["Margin"].idxmin()]
+            best_region  = reg_agg.loc[reg_agg["Margin"].idxmax()]
+            gap = best_region["Margin"] - worst_region["Margin"]
+            if gap > 5:
+                st.markdown(f"""
+                <div class="alert-banner alert-warning">
+                    <div class="alert-icon">🟡</div>
+                    <div class="alert-text"><b>{worst_region['Region']}</b> trails <b>{best_region['Region']}</b> by {gap:.1f} percentage points in margin
+                    ({worst_region['Margin']:.1f}% vs {best_region['Margin']:.1f}%) despite generating {fmt_currency(worst_region['Revenue'])} in revenue — a discount policy gap, not a demand problem.</div>
+                </div>
+                """, unsafe_allow_html=True)
+            st.write("")
+
+        col1, col2 = st.columns([1.5, 1])
+        with col1:
+            with st.container(border=True):
+                st.markdown('<div class="chart-card-title">Regional Revenue vs Profit Margin</div>', unsafe_allow_html=True)
+                st.markdown('<div class="chart-card-sub">Bubble size = order volume</div>', unsafe_allow_html=True)
+
+                max_orders = reg_agg["Orders"].max() if not reg_agg.empty else 1
+                size_ref = 2. * max_orders / (40.**2) if max_orders > 0 else 1
+
+                fig_reg = go.Figure(go.Scatter(
+                    x=reg_agg["Revenue"], y=reg_agg["Margin"], mode="markers+text",
+                    text=reg_agg["Region"], textposition="top center", textfont=dict(size=12),
+                    marker=dict(
+                        size=reg_agg["Orders"], sizemode="area",
+                        sizeref=size_ref, sizemin=12, color=reg_agg["Margin"], colorscale="RdYlGn", 
+                        showscale=True, colorbar=dict(title="Margin %"), line=dict(width=2, color="white")
+                    )
+                ))
+                fig_reg = chart_layout(fig_reg, height=380, show_legend=False)
+                fig_reg.update_layout(xaxis_title="Total Revenue ($)", yaxis_title="Profit Margin (%)")
+                fig_reg.add_hline(y=0, line_dash="dash", line_color=DANGER, annotation_text="Break-even")
+                st.plotly_chart(fig_reg, use_container_width=True)
+
+        with col2:
+            with st.container(border=True):
+                st.markdown('<div class="chart-card-title">Region Metrics</div>', unsafe_allow_html=True)
+                disp = reg_agg.copy()
+                disp["Revenue"] = disp["Revenue"].apply(fmt_currency)
+                disp["Profit"] = disp["Profit"].apply(fmt_currency)
+                disp["Margin"] = disp["Margin"].apply(fmt_pct)
+                disp["AvgDiscount"] = disp["AvgDiscount"].apply(lambda x: f"{x*100:.1f}%")
+                st.dataframe(disp[["Region","Revenue","Profit","Margin","AvgDiscount"]], hide_index=True, use_container_width=True)
+
         st.write("")
+        if "State" in df.columns:
+            st.markdown('<div class="sec-header"><div class="sec-title">🔎 Drill-Down: State-Level Detail</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-desc">Select a region to inspect state-level performance within it.</div>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns([1.5, 1])
-    with col1:
-        with st.container(border=True):
-            st.markdown('<div class="chart-card-title">Regional Revenue vs Profit Margin</div>', unsafe_allow_html=True)
-            st.markdown('<div class="chart-card-sub">Bubble size = order volume</div>', unsafe_allow_html=True)
+            drill_region = st.selectbox("Select region:", ["All Regions"] + sorted(df["Region"].unique().tolist()), key="geo_drill")
+            geo_drill_df = df if drill_region == "All Regions" else df[df["Region"] == drill_region]
+            state_agg = geo_drill_df.groupby("State").agg(Sales=("Sales","sum"), Profit=("Profit","sum")).reset_index()
 
-            max_orders = reg_agg["Orders"].max() if not reg_agg.empty else 1
-            size_ref = 2. * max_orders / (40.**2) if max_orders > 0 else 1
-
-            fig_reg = go.Figure(go.Scatter(
-                x=reg_agg["Revenue"], y=reg_agg["Margin"], mode="markers+text",
-                text=reg_agg["Region"], textposition="top center", textfont=dict(size=12),
-                marker=dict(
-                    size=reg_agg["Orders"], sizemode="area",
-                    sizeref=size_ref, sizemin=12, color=reg_agg["Margin"], colorscale="RdYlGn", 
-                    showscale=True, colorbar=dict(title="Margin %"), line=dict(width=2, color="white")
-                )
-            ))
-            fig_reg = chart_layout(fig_reg, height=380, show_legend=False)
-            fig_reg.update_layout(xaxis_title="Total Revenue ($)", yaxis_title="Profit Margin (%)")
-            fig_reg.add_hline(y=0, line_dash="dash", line_color=DANGER, annotation_text="Break-even")
-            st.plotly_chart(fig_reg, use_container_width=True)
-
-    with col2:
-        with st.container(border=True):
-            st.markdown('<div class="chart-card-title">Region Metrics</div>', unsafe_allow_html=True)
-            disp = reg_agg.copy()
-            disp["Revenue"] = disp["Revenue"].apply(fmt_currency)
-            disp["Profit"] = disp["Profit"].apply(fmt_currency)
-            disp["Margin"] = disp["Margin"].apply(fmt_pct)
-            disp["AvgDiscount"] = disp["AvgDiscount"].apply(lambda x: f"{x*100:.1f}%")
-            st.dataframe(disp[["Region","Revenue","Profit","Margin","AvgDiscount"]], hide_index=True, use_container_width=True)
-
-    st.write("")
-    st.markdown('<div class="sec-header"><div class="sec-title">🔎 Drill-Down: State-Level Detail</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-desc">Select a region to inspect state-level performance within it.</div>', unsafe_allow_html=True)
-
-    drill_region = st.selectbox("Select region:", ["All Regions"] + sorted(df["Region"].unique().tolist()), key="geo_drill")
-    geo_drill_df = df if drill_region == "All Regions" else df[df["Region"] == drill_region]
-    state_agg = geo_drill_df.groupby("State").agg(Sales=("Sales","sum"), Profit=("Profit","sum")).reset_index()
-
-    col_s1, col_s2 = st.columns(2)
-    with col_s1:
-        with st.container(border=True):
-            top_states = state_agg.nlargest(10, "Profit").sort_values("Profit")
-            fig_top = go.Figure(go.Bar(
-                x=top_states["Profit"], y=top_states["State"], orientation="h",
-                marker_color=SUCCESS, text=top_states["Profit"].apply(fmt_currency), textposition="auto"
-            ))
-            fig_top = chart_layout(fig_top, height=340, show_legend=False)
-            fig_top.update_layout(title="🏆 Top 10 Most Profitable States", xaxis_title="Profit ($)")
-            st.plotly_chart(fig_top, use_container_width=True)
-    with col_s2:
-        with st.container(border=True):
-            bot_states = state_agg.nsmallest(10, "Profit").sort_values("Profit", ascending=False)
-            fig_bot = go.Figure(go.Bar(
-                x=bot_states["Profit"], y=bot_states["State"], orientation="h",
-                marker_color=DANGER, text=bot_states["Profit"].apply(fmt_currency), textposition="auto"
-            ))
-            fig_bot = chart_layout(fig_bot, height=340, show_legend=False)
-            fig_bot.update_layout(title="🚨 Top 10 States with Highest Losses", xaxis_title="Losses ($)")
-            st.plotly_chart(fig_bot, use_container_width=True)
+            col_s1, col_s2 = st.columns(2)
+            with col_s1:
+                with st.container(border=True):
+                    top_states = state_agg.nlargest(10, "Profit").sort_values("Profit")
+                    fig_top = go.Figure(go.Bar(
+                        x=top_states["Profit"], y=top_states["State"], orientation="h",
+                        marker_color=SUCCESS, text=top_states["Profit"].apply(fmt_currency), textposition="auto"
+                    ))
+                    fig_top = chart_layout(fig_top, height=340, show_legend=False)
+                    fig_top.update_layout(title="🏆 Top 10 Most Profitable States", xaxis_title="Profit ($)")
+                    st.plotly_chart(fig_top, use_container_width=True)
+            with col_s2:
+                with st.container(border=True):
+                    bot_states = state_agg.nsmallest(10, "Profit").sort_values("Profit", ascending=False)
+                    fig_bot = go.Figure(go.Bar(
+                        x=bot_states["Profit"], y=bot_states["State"], orientation="h",
+                        marker_color=DANGER, text=bot_states["Profit"].apply(fmt_currency), textposition="auto"
+                    ))
+                    fig_bot = chart_layout(fig_bot, height=340, show_legend=False)
+                    fig_bot.update_layout(title="🚨 Top 10 States with Highest Losses", xaxis_title="Losses ($)")
+                    st.plotly_chart(fig_bot, use_container_width=True)
+    else:
+        st.info("Region information not found in the dataset.")
 
 # ============================================================
 # PAGE 4: PRODUCT PORTFOLIO
@@ -691,74 +703,77 @@ elif menu == "🛒 Product Portfolio":
     st.title("Product Portfolio Analysis")
     st.caption("Drill down from Categories to specific Products to find the stars and the dead weights.")
 
-    sub_agg = df.groupby(["Category", "Sub-Category"]).agg(Sales=("Sales","sum"), Profit=("Profit","sum")).reset_index()
-    sub_agg["Margin"] = np.where(sub_agg["Sales"] > 0, (sub_agg["Profit"] / sub_agg["Sales"] * 100), 0)
+    if "Category" in df.columns and "Sub-Category" in df.columns:
+        sub_agg = df.groupby(["Category", "Sub-Category"]).agg(Sales=("Sales","sum"), Profit=("Profit","sum")).reset_index()
+        sub_agg["Margin"] = np.where(sub_agg["Sales"] > 0, (sub_agg["Profit"] / sub_agg["Sales"] * 100), 0)
 
-    loss_subcats = sub_agg[sub_agg["Profit"] < 0]
-    if not loss_subcats.empty:
-        names = ", ".join(loss_subcats["Sub-Category"].tolist())
-        st.markdown(f"""
-        <div class="alert-banner alert-critical">
-            <div class="alert-icon">🔴</div>
-            <div class="alert-text"><b>{len(loss_subcats)} sub-categor{'y' if len(loss_subcats)==1 else 'ies'} losing money:</b> {names} — combined loss of {fmt_currency(abs(loss_subcats['Profit'].sum()))}.</div>
-        </div>
-        """, unsafe_allow_html=True)
-    st.write("")
+        loss_subcats = sub_agg[sub_agg["Profit"] < 0]
+        if not loss_subcats.empty:
+            names = ", ".join(loss_subcats["Sub-Category"].tolist())
+            st.markdown(f"""
+            <div class="alert-banner alert-critical">
+                <div class="alert-icon">🔴</div>
+                <div class="alert-text"><b>{len(loss_subcats)} sub-categor{'y' if len(loss_subcats)==1 else 'ies'} losing money:</b> {names} — combined loss of {fmt_currency(abs(loss_subcats['Profit'].sum()))}.</div>
+            </div>
+            """, unsafe_allow_html=True)
+        st.write("")
 
-    with st.container(border=True):
-        st.markdown('<div class="chart-card-title">Sub-Category Performance Matrix</div>', unsafe_allow_html=True)
-        st.markdown('<div class="chart-card-sub">Box size = revenue · Color = margin (red = loss, green = healthy)</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown('<div class="chart-card-title">Sub-Category Performance Matrix</div>', unsafe_allow_html=True)
+            st.markdown('<div class="chart-card-sub">Box size = revenue · Color = margin (red = loss, green = healthy)</div>', unsafe_allow_html=True)
 
-        sub_agg_map = sub_agg[sub_agg["Sales"] > 0]
-        if not sub_agg_map.empty:
-            fig_tree = px.treemap(
-                sub_agg_map, path=[px.Constant("All Products"), "Category", "Sub-Category"],
-                values="Sales", color="Margin", color_continuous_scale="RdYlGn", color_continuous_midpoint=0,
-                custom_data=["Profit", "Sales", "Margin"]
-            )
-            fig_tree.update_traces(
-                hovertemplate="<b>%{label}</b><br>Sales: $%{customdata[1]:,.0f}<br>Profit: $%{customdata[0]:,.0f}<br>Margin: %{customdata[2]:.1f}%<extra></extra>",
-                textfont=dict(color="white", size=11) # Ukuran font Treemap direduksi untuk HP
-            )
-            fig_tree = chart_layout(fig_tree, height=440)
-            fig_tree.update_layout(margin=dict(t=10, l=10, r=10, b=10))
-            st.plotly_chart(fig_tree, use_container_width=True)
+            sub_agg_map = sub_agg[sub_agg["Sales"] > 0]
+            if not sub_agg_map.empty:
+                fig_tree = px.treemap(
+                    sub_agg_map, path=[px.Constant("All Products"), "Category", "Sub-Category"],
+                    values="Sales", color="Margin", color_continuous_scale="RdYlGn", color_continuous_midpoint=0,
+                    custom_data=["Profit", "Sales", "Margin"]
+                )
+                fig_tree.update_traces(
+                    hovertemplate="<b>%{label}</b><br>Sales: $%{customdata[1]:,.0f}<br>Profit: $%{customdata[0]:,.0f}<br>Margin: %{customdata[2]:.1f}%<extra></extra>",
+                    textfont=dict(color="white", size=11)
+                )
+                fig_tree = chart_layout(fig_tree, height=440)
+                fig_tree.update_layout(margin=dict(t=10, l=10, r=10, b=10))
+                st.plotly_chart(fig_tree, use_container_width=True)
 
-    st.write("")
-    st.markdown('<div class="sec-header"><div class="sec-title">🔎 Drill-Down: SKU-Level Detail</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sec-desc">Select a category to see exactly which products drive its result.</div>', unsafe_allow_html=True)
+        st.write("")
+        st.markdown('<div class="sec-header"><div class="sec-title">🔎 Drill-Down: SKU-Level Detail</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-desc">Select a category to see exactly which products drive its result.</div>', unsafe_allow_html=True)
 
-    drill_pp = st.selectbox("Filter by category:", ["All Categories"] + sorted(df["Category"].unique().tolist()), key="prod_drill")
-    pp_df = df if drill_pp == "All Categories" else df[df["Category"] == drill_pp]
+        drill_pp = st.selectbox("Filter by category:", ["All Categories"] + sorted(df["Category"].unique().tolist()), key="prod_drill")
+        pp_df = df if drill_pp == "All Categories" else df[df["Category"] == drill_pp]
 
-    if 'Product Name' in pp_df.columns:
-        prod_agg = pp_df.groupby(["Product Name", "Category"]).agg(Sales=("Sales","sum"), Profit=("Profit","sum")).reset_index()
+        if 'Product Name' in pp_df.columns:
+            prod_agg = pp_df.groupby(["Product Name", "Category"]).agg(Sales=("Sales","sum"), Profit=("Profit","sum")).reset_index()
 
-        col_p1, col_p2 = st.columns(2)
-        with col_p1:
-            with st.container(border=True):
-                st.markdown("**🌟 Top 10 Star Products**")
-                top_p = prod_agg.nlargest(10, "Profit").copy()
-                if not top_p.empty:
-                    top_p["Short"] = top_p["Product Name"].apply(lambda x: x[:38] + "…" if len(x) > 38 else x)
-                    fig_tp = px.bar(top_p, x="Profit", y="Short", color="Category", orientation="h", color_discrete_sequence=PALETTE)
-                    fig_tp = chart_layout(fig_tp, height=380, show_legend=False)
-                    fig_tp.update_layout(yaxis={"categoryorder":"total ascending"}, yaxis_title=None, xaxis_title="Profit ($)")
-                    st.plotly_chart(fig_tp, use_container_width=True)
-                else:
-                    st.info("No data.")
-        with col_p2:
-            with st.container(border=True):
-                st.markdown("**🗑️ Top 10 Bleeding Products**")
-                bot_p = prod_agg.nsmallest(10, "Profit").copy()
-                if not bot_p.empty:
-                    bot_p["Short"] = bot_p["Product Name"].apply(lambda x: x[:38] + "…" if len(x) > 38 else x)
-                    fig_bp = px.bar(bot_p, x="Profit", y="Short", color="Category", orientation="h", color_discrete_sequence=PALETTE)
-                    fig_bp = chart_layout(fig_bp, height=380, show_legend=False)
-                    fig_bp.update_layout(yaxis={"categoryorder":"total descending"}, yaxis_title=None, xaxis_title="Loss ($)")
-                    st.plotly_chart(fig_bp, use_container_width=True)
-                else:
-                    st.info("No data.")
+            col_p1, col_p2 = st.columns(2)
+            with col_p1:
+                with st.container(border=True):
+                    st.markdown("**🌟 Top 10 Star Products**")
+                    top_p = prod_agg.nlargest(10, "Profit").copy()
+                    if not top_p.empty:
+                        top_p["Short"] = top_p["Product Name"].apply(lambda x: x[:38] + "…" if len(x) > 38 else x)
+                        fig_tp = px.bar(top_p, x="Profit", y="Short", color="Category", orientation="h", color_discrete_sequence=PALETTE)
+                        fig_tp = chart_layout(fig_tp, height=380, show_legend=False)
+                        fig_tp.update_layout(yaxis={"categoryorder":"total ascending"}, yaxis_title=None, xaxis_title="Profit ($)")
+                        st.plotly_chart(fig_tp, use_container_width=True)
+                    else:
+                        st.info("No data.")
+            with col_p2:
+                with st.container(border=True):
+                    st.markdown("**🗑️ Top 10 Bleeding Products**")
+                    bot_p = prod_agg.nsmallest(10, "Profit").copy()
+                    if not bot_p.empty:
+                        bot_p["Short"] = bot_p["Product Name"].apply(lambda x: x[:38] + "…" if len(x) > 38 else x)
+                        fig_bp = px.bar(bot_p, x="Profit", y="Short", color="Category", orientation="h", color_discrete_sequence=PALETTE)
+                        fig_bp = chart_layout(fig_bp, height=380, show_legend=False)
+                        fig_bp.update_layout(yaxis={"categoryorder":"total descending"}, yaxis_title=None, xaxis_title="Loss ($)")
+                        st.plotly_chart(fig_bp, use_container_width=True)
+                    else:
+                        st.info("No data.")
+    else:
+         st.info("Category or Sub-Category columns are missing from the dataset.")
 
 # ============================================================
 # PAGE 5: PROFITABILITY RISKS (DISCOUNT TRAP)
@@ -864,65 +879,68 @@ elif menu == "👥 Customer Insights":
     st.title("Customer Insights & Lifetime Value")
     st.caption("Identify VIP accounts driving the business and problematic accounts draining resources.")
 
-    cust_agg = df.groupby("Customer Name").agg(
-        Total_Sales=("Sales","sum"), Total_Profit=("Profit","sum"),
-        Order_Count=(order_col,"nunique" if "Order ID" in df.columns else "count"), 
-        Avg_Discount=("Discount","mean")
-    ).reset_index()
+    if "Customer Name" in df.columns:
+        cust_agg = df.groupby("Customer Name").agg(
+            Total_Sales=("Sales","sum"), Total_Profit=("Profit","sum"),
+            Order_Count=(order_col,"nunique" if "Order ID" in df.columns else "count"), 
+            Avg_Discount=("Discount","mean")
+        ).reset_index()
 
-    def segment_customer(row):
-        if row["Total_Profit"] < 0: return "Detractor (Loss)"
-        elif row["Total_Profit"] > 1500: return "VIP (High Profit)"
-        elif row["Total_Sales"] > 3000: return "High Volume / Low Margin"
-        else: return "Standard"
+        def segment_customer(row):
+            if row["Total_Profit"] < 0: return "Detractor (Loss)"
+            elif row["Total_Profit"] > 1500: return "VIP (High Profit)"
+            elif row["Total_Sales"] > 3000: return "High Volume / Low Margin"
+            else: return "Standard"
 
-    cust_agg["Segment"] = cust_agg.apply(segment_customer, axis=1)
+        cust_agg["Segment"] = cust_agg.apply(segment_customer, axis=1)
 
-    detractors = cust_agg[cust_agg["Segment"] == "Detractor (Loss)"]
-    if not detractors.empty:
-        st.markdown(f"""
-        <div class="alert-banner alert-warning">
-            <div class="alert-icon">🟡</div>
-            <div class="alert-text"><b>{len(detractors)} customers</b> are net loss-making, costing {fmt_currency(abs(detractors['Total_Profit'].sum()))} combined —
-            often driven by high average discounts. See the table below.</div>
-        </div>
-        """, unsafe_allow_html=True)
-    st.write("")
+        detractors = cust_agg[cust_agg["Segment"] == "Detractor (Loss)"]
+        if not detractors.empty:
+            st.markdown(f"""
+            <div class="alert-banner alert-warning">
+                <div class="alert-icon">🟡</div>
+                <div class="alert-text"><b>{len(detractors)} customers</b> are net loss-making, costing {fmt_currency(abs(detractors['Total_Profit'].sum()))} combined —
+                often driven by high average discounts. See the table below.</div>
+            </div>
+            """, unsafe_allow_html=True)
+        st.write("")
 
-    with st.container(border=True):
-        st.markdown('<div class="chart-card-title">Customer Value Matrix</div>', unsafe_allow_html=True)
-        st.markdown('<div class="chart-card-sub">Each dot is a customer. Upper-right is the ideal target.</div>', unsafe_allow_html=True)
-
-        color_map = {"VIP (High Profit)": SUCCESS, "Standard": NEUTRAL,
-                    "Detractor (Loss)": DANGER, "High Volume / Low Margin": WARNING}
-        
-        if not cust_agg.empty:
-            fig_scatter = px.scatter(
-                cust_agg, x="Total_Sales", y="Total_Profit", color="Segment",
-                hover_name="Customer Name", color_discrete_map=color_map, opacity=0.7
-            )
-            fig_scatter = chart_layout(fig_scatter, height=440)
-            fig_scatter.update_traces(marker=dict(size=8, line=dict(width=0.5, color="white")))
-            fig_scatter.update_layout(xaxis_title="Lifetime Revenue ($)", yaxis_title="Lifetime Profit ($)")
-            fig_scatter.add_hline(y=0, line_color="#CBD5E1", line_width=2)
-            st.plotly_chart(fig_scatter, use_container_width=True)
-
-    col_t1, col_t2 = st.columns(2)
-    with col_t1:
         with st.container(border=True):
-            st.markdown("**💎 Top 10 Most Valuable Customers**")
-            top_c = cust_agg.nlargest(10, "Total_Profit")[["Customer Name","Total_Sales","Total_Profit","Order_Count"]].copy()
-            top_c["Total_Sales"] = top_c["Total_Sales"].apply(fmt_currency)
-            top_c["Total_Profit"] = top_c["Total_Profit"].apply(fmt_currency)
-            st.dataframe(top_c, hide_index=True, use_container_width=True)
-    with col_t2:
-        with st.container(border=True):
-            st.markdown("**🚨 Top 10 Most Costly Customers**")
-            bot_c = cust_agg.nsmallest(10, "Total_Profit")[["Customer Name","Total_Sales","Total_Profit","Avg_Discount"]].copy()
-            bot_c["Total_Sales"] = bot_c["Total_Sales"].apply(fmt_currency)
-            bot_c["Total_Profit"] = bot_c["Total_Profit"].apply(fmt_currency)
-            bot_c["Avg_Discount"] = bot_c["Avg_Discount"].apply(lambda x: f"{x*100:.1f}%")
-            st.dataframe(bot_c, hide_index=True, use_container_width=True)
+            st.markdown('<div class="chart-card-title">Customer Value Matrix</div>', unsafe_allow_html=True)
+            st.markdown('<div class="chart-card-sub">Each dot is a customer. Upper-right is the ideal target.</div>', unsafe_allow_html=True)
+
+            color_map = {"VIP (High Profit)": SUCCESS, "Standard": NEUTRAL,
+                        "Detractor (Loss)": DANGER, "High Volume / Low Margin": WARNING}
+            
+            if not cust_agg.empty:
+                fig_scatter = px.scatter(
+                    cust_agg, x="Total_Sales", y="Total_Profit", color="Segment",
+                    hover_name="Customer Name", color_discrete_map=color_map, opacity=0.7
+                )
+                fig_scatter = chart_layout(fig_scatter, height=440)
+                fig_scatter.update_traces(marker=dict(size=8, line=dict(width=0.5, color="white")))
+                fig_scatter.update_layout(xaxis_title="Lifetime Revenue ($)", yaxis_title="Lifetime Profit ($)")
+                fig_scatter.add_hline(y=0, line_color="#CBD5E1", line_width=2)
+                st.plotly_chart(fig_scatter, use_container_width=True)
+
+        col_t1, col_t2 = st.columns(2)
+        with col_t1:
+            with st.container(border=True):
+                st.markdown("**💎 Top 10 Most Valuable Customers**")
+                top_c = cust_agg.nlargest(10, "Total_Profit")[["Customer Name","Total_Sales","Total_Profit","Order_Count"]].copy()
+                top_c["Total_Sales"] = top_c["Total_Sales"].apply(fmt_currency)
+                top_c["Total_Profit"] = top_c["Total_Profit"].apply(fmt_currency)
+                st.dataframe(top_c, hide_index=True, use_container_width=True)
+        with col_t2:
+            with st.container(border=True):
+                st.markdown("**🚨 Top 10 Most Costly Customers**")
+                bot_c = cust_agg.nsmallest(10, "Total_Profit")[["Customer Name","Total_Sales","Total_Profit","Avg_Discount"]].copy()
+                bot_c["Total_Sales"] = bot_c["Total_Sales"].apply(fmt_currency)
+                bot_c["Total_Profit"] = bot_c["Total_Profit"].apply(fmt_currency)
+                bot_c["Avg_Discount"] = bot_c["Avg_Discount"].apply(lambda x: f"{x*100:.1f}%")
+                st.dataframe(bot_c, hide_index=True, use_container_width=True)
+    else:
+        st.info("Customer Name column is missing from the dataset.")
 
 # ============================================================
 # FOOTER
