@@ -1,0 +1,2 @@
+projects/customer_lifetime_value_analysis/data/raw/*.csv filter=lfs diff=lfs merge=lfs -text
+projects/customer_lifetime_value_analysis/data/processed/*.csv filter=lfs diff=lfs merge=lfs -text
