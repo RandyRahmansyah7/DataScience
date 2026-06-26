@@ -176,7 +176,7 @@ with st.sidebar:
 # ============================================================
 @st.cache_data(show_spinner=False)
 def load_data():
-    candidates = ["Sample_-_Superstore.csv", "SampleSuperstore.csv", "Superstore.csv", "retail_profitability/data/SampleSuperstore.csv"]
+    candidates = ["Sample_-_Superstore.csv", "SampleSuperstore.csv", "Superstore.csv", "projects/retail_profitability/data/SampleSuperstore.csv"]
     df = None
     for path in candidates:
         if os.path.exists(path):
