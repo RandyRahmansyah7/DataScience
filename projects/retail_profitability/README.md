@@ -1,6 +1,6 @@
 # Retail Profitability & Discount Strategy Analysis
 
-> **Live Dashboard:** [datascience-fhijvcwq9jts4des8vjcsv.streamlit.app](https://datascience-fhijvcwq9jts4des8vjcsv.streamlit.app/)
+> **Live Dashboard:** [datascience-fhijvcwq9jts4des8vjcsv.streamlit.app](https://datascience-3hbayqdqj26o9xyvu8g5ec.streamlit.app/)
 
 An executive analytics dashboard examining four years of retail transaction
 data to answer one question: **why does $2.3M in revenue only deliver
