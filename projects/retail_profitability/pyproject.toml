@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "retail-profitability-analyzer"
+version = "0.1.0"
+description = "An executive analytics dashboard examining retail transaction data to analyze profitability and discount strategy."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Randy Rahmansyah" }
+]
+dependencies = [
+    "streamlit",
+    "pandas",
+    "plotly",
+    "numpy"
+]
+
+[project.urls]
+"Live Dashboard" = "https://datascience-3hbayqdqj26o9xyvu8g5ec.streamlit.app/"
+
+[tool.setuptools]
+
+py-modules = ["app"]
